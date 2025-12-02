@@ -19,8 +19,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind -->
+    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -80,5 +85,923 @@
 </head>
 <body>
     <div id="root"></div>
+
+    <script type="text/babel" data-presets="react,typescript">
+        const { useState, useEffect, useRef } = React;
+
+        // --- UTILS ---
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+
+        // --- CONSTANTS ---
+        const LOCATIONS = {
+            tokyo: { lat: 35.6895, lon: 139.6917, name: '東京' },
+            yokohama: { lat: 35.4437, lon: 139.6380, name: '橫濱' },
+            kamakura: { lat: 35.3192, lon: 139.5467, name: '鎌倉' },
+            kawagoe: { lat: 35.9251, lon: 139.4858, name: '川越' },
+            nikko: { lat: 36.7199, lon: 139.6982, name: '日光' }
+        };
+
+        const INITIAL_PACKING_LIST = [
+            { id: generateId(), category: '證件/錢包', text: '護照 (效期6個月以上)', checked: false },
+            { id: generateId(), category: '證件/錢包', text: '日幣現金', checked: false },
+            { id: generateId(), category: '證件/錢包', text: '信用卡 (海外回饋高)', checked: false },
+            { id: generateId(), category: '證件/錢包', text: 'Visit Japan Web QR Code 截圖', checked: false },
+            { id: generateId(), category: '電子產品', text: '手機 & 充電線', checked: false },
+            { id: generateId(), category: '電子產品', text: '行動電源', checked: false },
+            { id: generateId(), category: '電子產品', text: '網卡/漫遊開通', checked: false },
+            { id: generateId(), category: '衣物', text: '保暖外套 (1-2月均溫5度)', checked: false },
+            { id: generateId(), category: '衣物', text: '好走的鞋', checked: false },
+            { id: generateId(), category: '生活用品', text: '常備藥品 (感冒/胃藥/OK繃)', checked: false },
+            { id: generateId(), category: '生活用品', text: '折疊傘', checked: false },
+        ];
+
+        const DEFAULT_DATA = {
+            currencyRate: 0.215,
+            members: ["我", "旅伴A", "旅伴B"],
+            expenses: [],
+            packingList: INITIAL_PACKING_LIST,
+            reservations: [
+                { id: generateId(), type: 'flight', name: '去程 BR198', status: 'booked', dateTime: '1/28 08:50', refNumber: '6F3X9A', notes: '桃園 T2 -> 成田 T1', url: '' },
+                { id: generateId(), type: 'flight', name: '回程 BR197', status: 'booked', dateTime: '2/3 13:00', refNumber: '6F3X9A', notes: '成田 T1 -> 桃園 T2', url: '' },
+                { id: generateId(), type: 'hotel', name: 'Dormy Inn Kawasaki', status: 'booked', dateTime: '1/28 - 1/30', notes: '神奈川県川崎市川崎区東田町9-3 (+81-44-230-5489)', url: 'https://www.google.com/maps/search/?api=1&query=Dormy+Inn+Kawasaki' },
+                { id: generateId(), type: 'hotel', name: '東橫INN 淺草藏前2號店', status: 'booked', dateTime: '1/30 - 2/3', notes: '東京都台東区蔵前3-15-5 (+81-3-5821-1045)', url: 'https://www.google.com/maps/search/?api=1&query=Toyoko+Inn+Asakusa+Kuramae' },
+            ],
+            days: [
+                {
+                    date: "1/28", weekday: "週三",
+                    title: "抵達與橫濱港夜景",
+                    weather: "晴時多雲 4-11°C",
+                    locationKey: "yokohama",
+                    imageUrl: "./yokohama.jpg",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "機場貴賓室/便利商店", dish: "飯糰/三明治", priceLevel: "¥500", url: "", locationUrl: "", note: "快速解決" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "Skyliner 便當", dish: "炸豬排三明治", priceLevel: "¥1000", url: "", locationUrl: "", note: "車上享用" }
+                        ],
+                        dinner: [
+                            { id: generateId(), name: "Lazona 川崎廣場", dish: "金子半之助/利久牛舌", priceLevel: "¥1500~", url: "https://www.google.com/search?q=Lazona+Kawasaki+Restaurants", locationUrl: "https://maps.google.com/?q=Lazona+Kawasaki", note: "川崎站直結，選擇極多" },
+                            { id: generateId(), name: "Bills 紅磚倉庫", dish: "Ricotta鬆餅", priceLevel: "¥2500", url: "https://billsjapan.com/jp/横浜赤レンガ倉庫", locationUrl: "https://maps.google.com/?q=Bills+Yokohama+Red+Brick", note: "氣氛佳，需預約" },
+                            { id: generateId(), name: "Afuri 拉麵", dish: "柚子鹽拉麵", priceLevel: "¥1200", url: "https://afuri.com/", locationUrl: "https://maps.google.com/?q=Afuri+Yokohama+Landmark", note: "橫濱地標塔店，清爽系" }
+                        ]
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "08:50", type: "transport", title: "起飛 BR198", loc: "桃園機場 T1", image: "./airport.jpg", note: "06:30 集合", 
+                            subItems: [{id: generateId(), type: 'do', text: '領取Wifi機', checked: false}, {id: generateId(), type: 'buy', text: '免稅化妝品', checked: false}],
+                            transitToNext: { mode: 'other', duration: '3h 30m', note: '飛行時間' } 
+                        },
+                        { 
+                            id: generateId(), time: "12:55", type: "transport", title: "抵達", loc: "成田機場 T1", image: "./narita.jpg", note: "領取 Skyliner, Suica",
+                            subItems: [{id: generateId(), type: 'buy', text: 'Suica卡 (儲值¥3000)', checked: false}],
+                            transitToNext: { mode: 'train', duration: '50m', note: 'Skyliner (成田->京成上野)' }
+                        },
+                        { 
+                            id: generateId(), time: "14:00", type: "transport", title: "移動：成田→川崎", loc: "Skyliner", image: "./skyliner.jpg", note: "轉 JR 上野東京線",
+                            transitToNext: { mode: 'train', duration: '40m', note: 'JR 上野東京線 (上野->川崎)' }
+                        },
+                        { 
+                            id: generateId(), time: "16:00", type: "hotel", title: "Check-in", loc: "Dormy Inn", image: "./kawasaki_inn.jpg", note: "享受迎賓咖啡",
+                            subItems: [{id: generateId(), type: 'do', text: '確認溫泉開放時間', checked: false}],
+                            transitToNext: { mode: 'train', duration: '20m', note: 'JR京濱東北線 (川崎->櫻木町)' }
+                        },
+                        { 
+                            id: generateId(), time: "17:30", type: "sight", title: "紅磚倉庫公園", loc: "橫濱", image: "./yo.jpg", tags: ["必拍:夜景"], desc: "充滿異國情調的歷史倉庫群，適合散步拍照。",
+                            subItems: [{id: generateId(), type: 'buy', text: '橫濱焦糖牛奶糖', checked: false}, {id: generateId(), type: 'eat', text: '崎陽軒燒賣', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '10m', note: '步行至運河公園站' }
+                        },
+                        { 
+                            id: generateId(), time: "20:30", type: "sight", title: "橫濱空中纜車", loc: "櫻木町站", image: "./air_cabin.jpg", note: "單程 1000円，欣賞港未來全景。",
+                            subItems: [{id: generateId(), type: 'do', text: '錄下夜景縮時', checked: false}],
+                            transitToNext: { mode: 'train', duration: '15m', note: 'JR京濱東北線回川崎' }
+                        },
+                        { 
+                            id: generateId(), time: "22:00", type: "food", title: "夜鳴拉麵 & 溫泉", loc: "Dormy Inn", image: "./dormy_ramen.jpg", tags: ["溫泉","免費拉麵","免費冰棒","乳酸飲料"], desc: "飯店招牌服務，泡湯後享用免費醬油拉麵。" 
+                        }
+                    ]
+                },
+                {
+                    date: "1/29", weekday: "週四",
+                    title: "湘南海岸與江之島",
+                    weather: "晴天 5-12°C",
+                    locationKey: "kamakura",
+                    imageUrl: "./bridge_enoshima.jpg",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "飯店早餐", dish: "自助餐", priceLevel: "已含", url: "", locationUrl: "", note: "吃飽再出發" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "Tobiccho 本店", dish: "魩仔魚丼", priceLevel: "¥1800", url: "https://tobiccho.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "江之島排隊名店，可抽整理券" },
+                            { id: generateId(), name: "魚見亭", dish: "海鮮丼", priceLevel: "¥2000", url: "https://enoshima-uomitei.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "懸崖邊戶外座位，景色無敵" }
+                        ],
+                        dinner: [
+                            { id: generateId(), name: "AFURI 橫濱", dish: "柚子拉麵", priceLevel: "¥1200", url: "https://afuri.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "回程經過橫濱吃" },
+                            { id: generateId(), name: "磯丸水產", dish: "蟹味噌甲羅燒", priceLevel: "¥2000", url: "", locationUrl: "https://maps.app.goo.gl/xxx", note: "川崎站前有分店，24小時營業" }
+                        ]
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "09:00", type: "sight", title: "新江之島水族館", loc: "江之島", image: "./aqu.jpg", tags: ["推薦:水母廳"], desc: "相模灣大水槽與夢幻水母廳。",
+                            subItems: [{id: generateId(), type: 'do', text: '看海豚表演', checked: false}, {id: generateId(), type: 'buy', text: '水母玩偶', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '10m', note: '步行過橋' }
+                        },
+                        { 
+                            id: generateId(), time: "11:30", type: "food", title: "仲見世通吃透透", loc: "江之島老街", image: "./street_enoshima.jpg", tags: ["章魚仙貝", "魩仔魚"], desc: "參拜江島神社，購買手扶梯套票，邊走邊吃。", 
+                            subItems: [{id: generateId(), type: 'eat', text: '朝日堂 整隻龍蝦仙貝', checked: false}, {id: generateId(), type: 'eat', text: '紀之國屋女夫饅頭', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '20m', note: '搭乘手扶梯至頂端' }
+                        },
+                        { 
+                            id: generateId(), time: "13:00", type: "sight", title: "海蠟燭展望燈塔", loc: "江之島頂", image: "./candle.jpg", desc: "天氣好可眺望富士山。",
+                            transitToNext: { mode: 'walk', duration: '15m', note: '往下走至奧津宮方向' }
+                        },
+                        { 
+                            id: generateId(), time: "14:00", type: "food", title: "午餐：魚見亭", loc: "江之島懸崖", image: "./restaurant_enoshima.jpg", tags: ["絕景戶外座"], desc: "坐在懸崖邊看海吃海鮮丼，視野極佳。",
+                            transitToNext: { mode: 'walk', duration: '10m', note: '步行至岩屋' }
+                        },
+                        { 
+                            id: generateId(), time: "15:30", type: "sight", title: "岩屋", loc: "江之島後山", image: "./cave.jpg", desc: "海蝕平台與洞窟，絕美夕陽名所。",
+                            subItems: [{id: generateId(), type: 'do', text: '拍富士山夕陽', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '20m', note: '搭乘弁天丸遊覽船回橋頭(視風浪)' }
+                        },
+                        { 
+                            id: generateId(), time: "17:00", type: "transport", title: "湘南單軌電車", loc: "湘南江之島", image: "./monorail.jpg", note: "倒掛式電車，像雲霄飛車般刺激。",
+                            transitToNext: { mode: 'train', duration: '30m', note: '大船轉車回川崎' }
+                        }
+                    ]
+                },
+                {
+                    date: "1/30", weekday: "週五",
+                    title: "鎌倉古都與晴空塔",
+                    weather: "多雲 4-10°C",
+                    locationKey: "kamakura",
+                    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800&auto=format&fit=crop",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "Bills 七里濱", dish: "Ricotta鬆餅", priceLevel: "¥2200", url: "https://billsjapan.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "需提前兩週預約窗邊位" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "Caraway", dish: "牛肉咖哩", priceLevel: "¥900", url: "", locationUrl: "https://maps.app.goo.gl/xxx", note: "鎌倉排隊名店，CP值高" },
+                            { id: generateId(), name: "Oxymoron", dish: "和風肉末咖哩", priceLevel: "¥1500", url: "https://www.oxymoron.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "小町通巷內文青店" }
+                        ],
+                        dinner: [
+                            { id: generateId(), name: "利久牛舌", dish: "牛舌定食", priceLevel: "¥2500", url: "https://www.rikyu-gyutan.co.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "晴空塔6F，厚切牛舌必吃" },
+                            { id: generateId(), name: "六厘舍", dish: "特製沾麵", priceLevel: "¥1100", url: "https://www.rokurinsha.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "晴空塔6F，麵條Q彈" },
+                            { id: generateId(), name: "Toriton 迴轉壽司", dish: "北海道時令壽司", priceLevel: "¥3000", url: "http://toriton-kita1.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "晴空塔6F，來自北海道的超人氣店" }
+                        ]
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "10:00", type: "food", title: "bills 早午餐", loc: "七里ヶ浜", image: "./bills.jpg", tags: ["必吃:鬆餅", "預約"], desc: "號稱世界第一早餐，海景第一排。",
+                            transitToNext: { mode: 'train', duration: '15m', note: '江之電 (七里濱->長谷)' }
+                        },
+                        { 
+                            id: generateId(), time: "12:00", type: "sight", title: "鎌倉大佛", loc: "高德院", image: "./buddha.jpg", desc: "國寶銅造阿彌陀如來坐像。",
+                            subItems: [{id: generateId(), type: 'do', text: '進入大佛胎內參觀(¥50)', checked: false}],
+                            transitToNext: { mode: 'train', duration: '10m', note: '江之電 (長谷->鎌倉)' }
+                        },
+                        { 
+                            id: generateId(), time: "13:30", type: "sight", title: "鶴岡八幡宮", loc: "鎌倉", image: "./kamakura.jpg", tags: ["小町通"], desc: "鎌倉地標，參道非常熱鬧，有許多小吃。",
+                            subItems: [{id: generateId(), type: 'buy', text: '豐島屋 鴿子餅乾', checked: false}, {id: generateId(), type: 'eat', text: 'Kamakura Chacha 抹茶霜淇淋', checked: false}, {id: generateId(), type: 'eat', text: '夢見屋 糰子', checked: false}],
+                            transitToNext: { mode: 'train', duration: '60m', note: 'JR橫須賀線 -> 淺草線 (直通)' }
+                        },
+                        { 
+                            id: generateId(), time: "16:00", type: "transport", title: "Check-in 淺草", loc: "東橫INN", image: "./inn.jpg", tags: ["小町通"], note: "寄放行李、稍作休息",
+                            transitToNext: { mode: 'train', duration: '5m', note: '淺草線 (淺草->押上)' }
+                        },
+                        { 
+                            id: generateId(), time: "19:00", type: "food", title: "晴空塔", loc: "押上", image: "./skytree.jpg", tags: ["必逛", "晚餐"], desc: "購物商城，六厘舍沾麵、利久牛舌都在這。",
+                            subItems: [{id: generateId(), type: 'buy', text: 'Tokyo Banana (晴空塔限定豹紋)', checked: false}, {id: generateId(), type: 'buy', text: 'Press Butter Sand', checked: false}, {id: generateId(), type: 'do', text: '寶可夢中心', checked: false}]
+                        }
+                    ]
+                },
+                {
+                    date: "1/31", weekday: "週六",
+                    title: "小江戶川越",
+                    weather: "晴天 3-11°C",
+                    locationKey: "kawagoe",
+                    imageUrl: "https://images.unsplash.com/photo-1564595346493-7e525384a6e5?q=80&w=800&auto=format&fit=crop",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "便利商店", dish: "咖啡/麵包", priceLevel: "¥400", url: "", locationUrl: "", note: "" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "小川菊", dish: "鰻魚飯", priceLevel: "¥4000", url: "https://www.ogakiku.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "百年老店，務必開門前排隊" },
+                            { id: generateId(), name: "川越釜飯 Torisei", dish: "釜飯定食", priceLevel: "¥1500", url: "http://www.torisei.net/", locationUrl: "https://maps.app.goo.gl/xxx", note: "排隊名店，雞肉釜飯很香" },
+                            { id: generateId(), name: "Hayashiya", dish: "鰻魚飯", priceLevel: "¥3500", url: "", locationUrl: "", note: "老街上的另一選擇" }
+                        ],
+                        dinner: [
+                            { id: generateId(), name: "無敵家", dish: "豚骨拉麵", priceLevel: "¥1200", url: "https://mutekiya.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "池袋名店，回程順路吃" },
+                            { id: generateId(), name: "活美登利壽司", dish: "迴轉壽司", priceLevel: "¥2500", url: "https://katumidori.co.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "池袋西武百貨8F，CP值高" }
+                        ]
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "09:00", type: "transport", title: "前往川越", loc: "池袋站", image: "./kawagoePass.png", note: "購買東武川越周遊券",
+                            transitToNext: { mode: 'train', duration: '30m', note: '東武東上線急行' }
+                        },
+                        { 
+                            id: generateId(), time: "10:30", type: "sight", title: "冰川神社", loc: "川越", image: "./hikawa.jpg", tags: ["體驗:釣鯛魚"], desc: "求姻緣名所，繪馬隧道必拍。",
+                            subItems: [{id: generateId(), type: 'do', text: '釣紅色鯛魚(求平安)', checked: false}, {id: generateId(), type: 'do', text: '釣粉色鯛魚(求良緣)', checked: false}, {id: generateId(), type: 'do', text: '放人形流(除穢)', checked: false}],
+                            transitToNext: { mode: 'bus', duration: '10m', note: '東武巴士' }
+                        },
+                        { 
+                            id: generateId(), time: "12:00", type: "food", title: "川越釜飯 Torisei", loc: "川越", image: "./torisei.jpg", desc: "招牌菜是「川越釜飯定食」（鰻魚塊配川越名物番薯）及「鳥もも炭火焼定食」。",
+                            transitToNext: { mode: 'walk', duration: '5m', note: '步行' }
+                        },
+                        { 
+                            id: generateId(), time: "13:00", type: "food", title: "小川菊 鰻魚飯", loc: "川越", image: "./mini_unagi.jpg", tags: ["必吃:鰻魚"], desc: "百年老店，炭烤香氣十足。若太久可改吃'傳米'，傳米有提供迷你鰻魚飯。",
+                            transitToNext: { mode: 'walk', duration: '5m', note: '步行至一番街' }
+                        },
+                        { 
+                            id: generateId(), time: "14:00", type: "sight", title: "藏造老街", loc: "一番街", image: "./oldstreet.jpg", tags: ["龜屋銅鑼燒","川越布丁","小江戶大花-玉子燒"], desc: "在川越的主要街道「小江戶川越一番街商店街」裡...",
+                            subItems: [{id: generateId(), type: 'eat', text: '川越布丁 (川越プリン)', checked: false}, {id: generateId(), type: 'eat', text: '小江戶大花 棍狀玉子燒', checked: false}, {id: generateId(), type: 'eat', text: '紫薯冰淇淋', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '5m', note: '步行' }
+                        },
+                        { 
+                            id: generateId(), time: "15:00", type: "sight", title: "時之鐘", loc: "一番街", image: "./toki.jpg", tags: ["龜屋銅鑼燒"], desc: "時之鐘是一個高約16公尺的木製鐘樓，現在是川越的地標性建築。",
+                            subItems: [{id: generateId(), type: 'buy', text: '龜屋 銅鑼燒', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '10m', note: '步行' }
+                        },
+                        { 
+                            id: generateId(), time: "15:30", type: "sight", title: "大正浪漫夢通", loc: "川越", image: "./taisei.jpg", desc: "位在川越的「大正浪漫夢通り」是一條充滿懷舊氛圍的歷史商店街。",
+                            transitToNext: { mode: 'walk', duration: '5m', note: '步行' }
+                        },
+                        { 
+                            id: generateId(), time: "16:00", type: "sight", title: "熊野神社", loc: "川越", image: "./kumano.jpg", tags:["錢洗弁財天","水晶球","套圈圈"], desc: "川越熊野神社是一座歷史悠久的開運、結緣神社。",
+                            subItems: [{id: generateId(), type: 'do', text: '洗錢弁財天', checked: false}, {id: generateId(), type: 'do', text: '健康步道', checked: false}],
+                            transitToNext: { mode: 'train', duration: '45m', note: '回池袋/淺草' }
+                        }
+                    ]
+                },
+                {
+                    date: "2/1", weekday: "週日",
+                    title: "日光世界遺產",
+                    weather: "雪/雨 0-5°C",
+                    locationKey: "nikko",
+                    imageUrl: "https://images.unsplash.com/photo-1528563351349-6456908d6e45?q=80&w=800&auto=format&fit=crop",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "Spacia X 車內販售", dish: "精釀啤酒/咖啡", priceLevel: "¥600", url: "", locationUrl: "", note: "車上Cafe" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "油源", dish: "湯波(豆皮)料理", priceLevel: "¥2000", url: "https://www.aburagen.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "日光名物，健康美味" },
+                            { id: generateId(), name: "Meiji-no-Yakata", dish: "蛋包飯/起司蛋糕", priceLevel: "¥2500", url: "http://www.meiji-yakata.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "明治之館，洋食名店" },
+                            { id: generateId(), name: "Komekichi Kozushi", dish: "日光湯波壽司", priceLevel: "¥1800", url: "", locationUrl: "https://maps.app.goo.gl/xxx", note: "創意壽司" }
+                        ],
+                        dinner: [
+                            { id: generateId(), name: "淺草 牛炸(Gyukatsu)", dish: "炸牛排", priceLevel: "¥1800", url: "https://www.asakusa-gyukatsu.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "雷門對面，人氣排隊店" },
+                            { id: generateId(), name: "Yoroiya 淺草拉麵", dish: "醬油拉麵", priceLevel: "¥900", url: "https://yoroiya.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "清淡系醬油拉麵，加入柚子提味" },
+                            { id: generateId(), name: "大黑家", dish: "海老天丼", priceLevel: "¥2000", url: "http://www.tempura.co.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "黑麻油炸天婦羅，口味較重" }
+                        ]
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "06:00", type: "transport", title: "SPACIA X (去程)", loc: "淺草站", image: "./spaciaX.jpg", tags: ["預約:必須"], desc: "最新奢華觀光列車。",
+                            subItems: [{id: generateId(), type: 'eat', text: '車內限定 Craft Beer', checked: false}, {id: generateId(), type: 'eat', text: '日光意式冰淇淋', checked: false}],
+                            transitToNext: { mode: 'train', duration: '1h 50m', note: '東武日光線' }
+                        },
+                        { 
+                            id: generateId(), time: "09:30", type: "food", title: "炸湯波饅頭", loc: "日光Sakaeya", image: "./sakaeya.jpg", tags: ["必吃"], desc: "撒上鹽巴的炸豆皮饅頭，甜鹹絕配。",
+                            subItems: [{id: generateId(), type: 'eat', text: '炸湯波饅頭', checked: false}],
+                            transitToNext: { mode: 'bus', duration: '10m', note: '世界遺產巡遊巴士' }
+                        },
+                        { 
+                            id: generateId(), time: "11:00", type: "sight", title: "日光世界遺產二社一寺", loc: "日光", image: "./Toshogu.jpg", tags: ["二荒山神社","東照宮","山輪王寺"], desc: "** 日光東照宮 **\n日光東照宮是供奉江戶幕府第一代將軍德川家康的神社...",
+                            subItems: [{id: generateId(), type: 'do', text: '找「眠貓」', checked: false}, {id: generateId(), type: 'do', text: '找「三猿」(非禮勿視...)', checked: false}, {id: generateId(), type: 'do', text: '聽「鳴龍」回音', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '10m', note: '步行' }
+                        },
+                        { 
+                            id: generateId(), time: "13:30", type: "food", title: "湯波料理午餐", loc: "油源", image: "./yuba.jpg", tags: ["湯波御膳"], desc: "日光名產豆皮料理。",
+                            transitToNext: { mode: 'walk', duration: '15m', note: '步行' }
+                        },
+                        { 
+                            id: generateId(), time: "15:30", type: "sight", title: "神橋", loc: "日光", image: "./hashi.jpg", desc: "朱紅色拱橋與雪景/溪流的對比。上橋要花錢，建議遠看就好。",
+                            transitToNext: { mode: 'bus', duration: '10m', note: '巴士回車站' }
+                        },
+                        { 
+                            id: generateId(), time: "16:30", type: "transport", title: "SPACIA X (回程)", loc: "東武日光站", image: "./spaciax.jpg", note: "在車上享用日光布丁或啤酒。",
+                            transitToNext: { mode: 'train', duration: '2h', note: '回淺草' }
+                        }
+                    ]
+                },
+                {
+                    date: "2/2", weekday: "週一",
+                    title: "東京經典精選",
+                    weather: "多雲 5-12°C",
+                    locationKey: "tokyo",
+                    imageUrl: "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?q=80&w=800&auto=format&fit=crop",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "Pelican Cafe", dish: "炭烤吐司", priceLevel: "¥800", url: "https://www.bakerpelican.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "淺草麵包老舖，需排隊" },
+                            { id: generateId(), name: "February Cafe", dish: "焦糖布丁", priceLevel: "¥700", url: "", locationUrl: "https://maps.app.goo.gl/xxx", note: "使用Pelican吐司的文青咖啡店" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "淺草今半", dish: "壽喜燒午膳", priceLevel: "¥4000", url: "https://www.asakusaimahan.co.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "百年老店，午餐CP值較高" },
+                            { id: generateId(), name: "Namiki Yabusoba", dish: "鴨南蠻蕎麥麵", priceLevel: "¥1800", url: "https://yabusoba.co.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "藪蕎麥御三家之一" }
+                        ],
+                        dinner: [
+                            { id: generateId(), name: "根室花丸", dish: "迴轉壽司", priceLevel: "¥3000", url: "", locationUrl: "https://maps.app.goo.gl/xxx", note: "KITTE丸之內店，排隊名店" },
+                            { id: generateId(), name: "Tsurutontan", dish: "大碗烏龍麵", priceLevel: "¥1500", url: "http://www.tsurutontan.co.jp/", locationUrl: "https://maps.app.goo.gl/xxx", note: "銀座Tokyu Plaza，碗比臉大" },
+                            { id: generateId(), name: "銀座 篝 (Kagari)", dish: "雞白湯Soba", priceLevel: "¥1200", url: "", locationUrl: "https://maps.app.goo.gl/xxx", note: "米其林推薦，濃郁雞白湯" }
+                        ]
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "9:00", type: "food", title: "Pelican CAFE", loc: "田原町", image: "./pelican.jpg", tags: ["炭烤吐司"], desc: "淺草麵包老舖「鵜鶘麵包」人氣早餐，必點炸火腿三明治。",
+                            transitToNext: { mode: 'walk', duration: '15m', note: '步行至雷門' }
+                        },
+                        { 
+                            id: generateId(), time: "10:30", type: "sight", title: "淺草寺 & 雷門", loc: "淺草", image: "./asakusa.jpg", tags: ["初訪必去"], desc: "東京最古老寺廟，早上去人較少。",
+                            subItems: [{id: generateId(), type: 'do', text: '求籤 (凶要綁在架上)', checked: false}, {id: generateId(), type: 'buy', text: '人形燒', checked: false}, {id: generateId(), type: 'eat', text: '花月堂 菠蘿麵包', checked: false}],
+                            transitToNext: { mode: 'train', duration: '20m', note: '銀座線 (淺草->京橋/日本橋)' }
+                        },
+                        { 
+                            id: generateId(), time: "13:00", type: "sight", title: "東京車站", loc: "丸之內", image: "./station.jpg", tags: ["伴手禮"], desc: "欣賞紅磚車站建築。",
+                            subItems: [{id: generateId(), type: 'buy', text: 'NY Perfect Cheese', checked: false}, {id: generateId(), type: 'buy', text: 'NewYork City Sand', checked: false}],
+                            transitToNext: { mode: 'train', duration: '15m', note: '丸之內線/JR (東京->赤羽橋)' }
+                        },
+                        { 
+                            id: generateId(), time: "15:00", type: "sight", title: "東京鐵塔", loc: "芝公園", image: "./tokyo_tower.jpg", tags: ["必拍:全景"], desc: "坐在草地上與東京鐵塔合照。",
+                            subItems: [{id: generateId(), type: 'do', text: '拍「地下停車場樓梯」網美照', checked: false}]
+                        },
+                    ]
+                },
+                {
+                    date: "2/3", weekday: "週二",
+                    title: "歸途",
+                    weather: "晴時多雲",
+                    locationKey: "tokyo",
+                    imageUrl: "https://images.unsplash.com/photo-1552654835-c468cb398fb8?q=80&w=800&auto=format&fit=crop",
+                    mealOptions: {
+                        breakfast: [
+                            { id: generateId(), name: "飯店早餐", dish: "飯糰", priceLevel: "", url: "", locationUrl: "", note: "" }
+                        ],
+                        lunch: [
+                            { id: generateId(), name: "壽司京辰", dish: "壽司", priceLevel: "¥3000", url: "", locationUrl: "", note: "成田機場管制區內，最後一頓美食" },
+                            { id: generateId(), name: "麥當勞", dish: "培根馬鈴薯派", priceLevel: "¥500", url: "", locationUrl: "", note: "日本限定口味" }
+                        ],
+                        dinner: []
+                    },
+                    events: [
+                        { 
+                            id: generateId(), time: "08:00", type: "hotel", title: "Check-out", loc: "東橫INN", image: "./inn.jpg", note: "檢查護照、錢包。",
+                            transitToNext: { mode: 'walk', duration: '5m', note: '步行至車站' }
+                        },
+                        { 
+                            id: generateId(), time: "08:30", type: "transport", title: "前往機場", loc: "Access特快", image: "./access.jpg", note: "直達成田 (約60分)。", 
+                            transitToNext: { mode: 'train', duration: '60m', note: '直達特快' }
+                        },
+                        { 
+                            id: generateId(), time: "10:12", type: "sight", title: "機場最後衝刺", loc: "成田 T2", image: "./naritaT.jpg", tags: ["免稅店"], desc: "購買白色戀人、Royce。",
+                            subItems: [{id: generateId(), type: 'buy', text: 'Royce 生巧克力', checked: false}, {id: generateId(), type: 'buy', text: 'LeTAO 起司蛋糕', checked: false}, {id: generateId(), type: 'buy', text: '薯條三兄弟', checked: false}],
+                            transitToNext: { mode: 'walk', duration: '30m', note: '登機口' }
+                        },
+                        { 
+                            id: generateId(), time: "13:00", type: "transport", title: "起飛 BR197", loc: "成田機場", image: "./plane.jpg", note: "再見東京！" }
+                        ]
+                    }
+                ]
+        };
+
+        const fetchLiveWeather = async (locationKey) => {
+            const loc = LOCATIONS[locationKey];
+            if (!loc) return null;
+
+            try {
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`);
+                const data = await response.json();
+                return {
+                    temp: Math.round(data.current_weather.temperature),
+                    code: data.current_weather.weathercode
+                };
+            } catch (error) {
+                console.error("Failed to fetch weather", error);
+                return null;
+            }
+        };
+
+        const getWeatherIcon = (code) => {
+            if (code === 0) return 'fa-sun';
+            if (code >= 1 && code <= 3) return 'fa-cloud-sun';
+            if (code >= 45 && code <= 48) return 'fa-smog';
+            if (code >= 51 && code <= 67) return 'fa-cloud-rain';
+            if (code >= 71 && code <= 77) return 'fa-snowflake';
+            if (code >= 95) return 'fa-bolt';
+            return 'fa-cloud';
+        };
+
+        // --- COMPONENTS ---
+
+        const EventCard = ({ event, onClick }) => {
+            const typeColors = {
+                transport: 'text-blue-400',
+                food: 'text-orange-400',
+                hotel: 'text-indigo-400',
+                sight: 'text-matcha'
+            };
+            return (
+                <div onClick={onClick} className="relative group cursor-pointer bg-white/50 rounded-2xl p-3 border border-transparent hover:border-matcha/30 hover:bg-white/80 transition-all duration-300">
+                    <div className="absolute -left-[45px] top-6 w-5 h-5 rounded-full border-4 border-rice bg-slate-300 group-hover:bg-matcha transition-colors shadow-sm z-10"></div>
+                    <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1">
+                            <div className="flex items-baseline gap-2 mb-1">
+                                <span className="font-mono text-sm font-bold text-slate-500">{event.time}</span>
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${typeColors[event.type] || 'text-slate-400'} opacity-80`}>
+                                    {event.type}
+                                </span>
+                            </div>
+                            <h3 className="text-lg font-bold text-charcoal leading-tight mb-1">{event.title}</h3>
+                            <p className="text-sm text-slate-500 font-medium truncate tracking-wide flex items-center">
+                                <i className="fa-solid fa-location-dot text-xs mr-1 opacity-70"></i>
+                                {event.loc}
+                            </p>
+                            {event.subItems && event.subItems.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {event.subItems.slice(0, 3).map(item => (
+                                        <span key={item.id} className={`text-[10px] px-2 py-0.5 rounded-md border ${item.checked ? 'bg-matcha text-white border-matcha' : 'bg-white text-slate-500 border-slate-200'}`}>
+                                            {item.type === 'buy' ? '🛍️' : item.type === 'eat' ? '🍴' : '✨'} {item.text}
+                                        </span>
+                                    ))}
+                                    {event.subItems.length > 3 && <span className="text-[10px] text-slate-400">+...</span>}
+                                </div>
+                            )}
+                        </div>
+                        {event.image && (
+                            <img 
+                                src={event.image} 
+                                className="w-20 h-20 rounded-xl object-cover shadow-sm opacity-90 group-hover:opacity-100 transition-opacity bg-slate-200 flex-shrink-0" 
+                                loading="lazy" 
+                                alt=""
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const TransportConnector = ({ data, onClick }) => {
+            const getTransportIcon = (mode) => {
+                switch(mode) {
+                    case 'train': return 'fa-train-subway';
+                    case 'walk': return 'fa-person-walking';
+                    case 'taxi': return 'fa-taxi';
+                    case 'bus': return 'fa-bus';
+                    default: return 'fa-arrow-right';
+                }
+            };
+            if (!data) {
+                return (
+                    <div className="relative h-12 ml-[10px] border-l-2 border-dotted border-slate-300 my-1 group cursor-pointer" onClick={(e) => { e.stopPropagation(); onClick(); }}>
+                        <div className="absolute top-1/2 -left-[10px] -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-slate-300 flex items-center justify-center text-slate-300 shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:border-matcha hover:text-matcha active:scale-95">
+                            <i className="fa-solid fa-plus text-[10px]"></i>
+                        </div>
+                    </div>
+                );
+            }
+            return (
+                <div className="relative h-16 ml-[10px] border-l-2 border-dashed border-slate-300 my-1 group">
+                    <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="absolute top-1/2 -left-[14px] -translate-y-1/2 flex items-center gap-2 bg-white border border-slate-200 shadow-sm px-3 py-1.5 rounded-full hover:border-matcha hover:text-matcha transition-all z-20 active:scale-95 max-w-[180px]">
+                        <i className={`fa-solid ${getTransportIcon(data.mode)} text-xs text-slate-400 group-hover:text-matcha flex-shrink-0`}></i>
+                        <div className="flex flex-col items-start text-left overflow-hidden">
+                            <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap group-hover:text-matcha leading-tight">{data.duration}</span>
+                            {data.note && <span className="text-[9px] text-slate-400 truncate w-full group-hover:text-matcha/70 leading-tight">{data.note}</span>}
+                        </div>
+                    </button>
+                </div>
+            );
+        };
+
+        const MealOptions = ({ mealData, onAdd, onEdit }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            if (!mealData) return null;
+            const hasData = mealData.breakfast.length > 0 || mealData.lunch.length > 0 || mealData.dinner.length > 0;
+            const RestaurantCard = ({ item, onClick }) => (
+                <div onClick={onClick} className="min-w-[220px] bg-white rounded-xl p-3 border border-subtle shadow-sm flex flex-col snap-start active:scale-95 transition-transform cursor-pointer relative group">
+                    <div className="absolute top-2 right-2 text-slate-300 group-hover:text-matcha transition-colors"><i className="fa-solid fa-pen-to-square text-xs"></i></div>
+                    <div className="flex justify-between items-start mb-2 pr-4">
+                        <h4 className="font-bold text-charcoal text-sm line-clamp-1">{item.name}</h4>
+                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{item.priceLevel}</span>
+                    </div>
+                    <div className="text-xs text-slate-500 mb-1"><span className="text-orange-400 font-bold">★ 推:</span> {item.dish}</div>
+                    {item.note && <p className="text-[10px] text-slate-400 line-clamp-2 mb-3 bg-slate-50 p-1 rounded">{item.note}</p>}
+                    <div className="mt-auto flex gap-2">
+                        {item.locationUrl ? <a href={item.locationUrl} onClick={e => e.stopPropagation()} target="_blank" rel="noreferrer" className="flex-1 py-1.5 text-center bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors"><i className="fa-solid fa-map-location-dot mr-1"></i> 地圖</a> : <div className="flex-1"></div>}
+                        {item.url ? <a href={item.url} onClick={e => e.stopPropagation()} target="_blank" rel="noreferrer" className="flex-1 py-1.5 text-center bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors"><i className="fa-brands fa-google mr-1"></i> 搜</a> : <div className="flex-1"></div>}
+                    </div>
+                </div>
+            );
+            const AddCard = ({ onClick }) => (
+                <div onClick={onClick} className="min-w-[50px] flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer hover:border-matcha hover:bg-matcha/5 transition-colors active:scale-95"><i className="fa-solid fa-plus text-slate-400"></i></div>
+            );
+            return (
+                <div className="mb-8 px-1">
+                    <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between bg-white border border-orange-100 p-3 rounded-xl shadow-sm mb-4 active:bg-orange-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500"><i className="fa-solid fa-utensils text-sm"></i></div>
+                            <div className="text-left">
+                                <div className="text-sm font-bold text-charcoal">美食備案 & 推薦</div>
+                                <div className="text-[10px] text-slate-400">{isOpen ? '點擊收合' : (hasData ? '點擊展開查看周邊餐廳' : '點擊新增餐廳口袋名單')}</div>
+                            </div>
+                        </div>
+                        <i className={`fa-solid fa-chevron-down text-slate-300 transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
+                    </button>
+                    {isOpen && (
+                        <div className="space-y-6 animate-fade-in pl-2">
+                            <div><div className="flex items-center justify-between mb-2 pr-2"><h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">早餐</h5></div><div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar snap-x min-h-[100px]">{mealData.breakfast.map(m => (<RestaurantCard key={m.id} item={m} onClick={() => onEdit('breakfast', m)} />))}<AddCard onClick={() => onAdd('breakfast')} /></div></div>
+                            <div><div className="flex items-center justify-between mb-2 pr-2"><h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">午餐</h5></div><div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar snap-x min-h-[100px]">{mealData.lunch.map(m => (<RestaurantCard key={m.id} item={m} onClick={() => onEdit('lunch', m)} />))}<AddCard onClick={() => onAdd('lunch')} /></div></div>
+                            <div><div className="flex items-center justify-between mb-2 pr-2"><h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">晚餐</h5></div><div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar snap-x min-h-[100px]">{mealData.dinner.map(m => (<RestaurantCard key={m.id} item={m} onClick={() => onEdit('dinner', m)} />))}<AddCard onClick={() => onAdd('dinner')} /></div></div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const MealModal = ({ isOpen, initialData, type, onClose, onSave, onDelete }) => {
+            const [formData, setFormData] = useState({ name: '', dish: '', priceLevel: '', note: '', url: '', locationUrl: '' });
+            useEffect(() => { if (isOpen) setFormData(initialData || { name: '', dish: '', priceLevel: '', note: '', url: '', locationUrl: '' }); }, [isOpen, initialData]);
+            if (!isOpen) return null;
+            const typeLabel = type === 'breakfast' ? '早餐' : type === 'lunch' ? '午餐' : '晚餐';
+            return (
+                <div className="fixed inset-0 z-[80]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-8 pb-safe shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+                        <div className="w-10 h-1 bg-slate-200/70 rounded-full mx-auto mb-8"></div>
+                        <h3 className="text-xl font-bold text-charcoal mb-6 tracking-wide">{initialData ? `編輯${typeLabel}選擇` : `新增${typeLabel}選擇`}</h3>
+                        <div className="space-y-6">
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">餐廳名稱</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="例如：一蘭拉麵" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
+                            <div className="flex gap-4"><div className="flex-[2]"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">推薦餐點</label><input type="text" value={formData.dish} onChange={(e) => setFormData({...formData, dish: e.target.value})} placeholder="例如：豚骨拉麵" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div><div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">價位</label><input type="text" value={formData.priceLevel} onChange={(e) => setFormData({...formData, priceLevel: e.target.value})} placeholder="¥1000" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none font-mono" /></div></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">Google Maps 連結 (選填)</label><input type="text" value={formData.locationUrl || ''} onChange={(e) => setFormData({...formData, locationUrl: e.target.value})} placeholder="https://maps..." className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">網站/食記連結 (選填)</label><input type="text" value={formData.url || ''} onChange={(e) => setFormData({...formData, url: e.target.value})} placeholder="https://..." className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">筆記</label><textarea value={formData.note || ''} onChange={(e) => setFormData({...formData, note: e.target.value})} rows={2} placeholder="必點、排隊攻略..." className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none"></textarea></div>
+                        </div>
+                        <div className="mt-8 flex gap-4">
+                            {initialData && onDelete && (<button type="button" onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle active:bg-red-50 transition-colors tracking-wider">刪除</button>)}
+                            <button type="button" onClick={() => { if (!formData.name) return; onSave({ id: initialData?.id || generateId(), name: formData.name, dish: formData.dish || '', priceLevel: formData.priceLevel || '', note: formData.note, url: formData.url, locationUrl: formData.locationUrl }); }} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition-transform tracking-wider shadow-lg shadow-matcha/20">儲存</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const EventModal = ({ isOpen, initialData, onClose, onSave, onDelete }) => {
+            const [formData, setFormData] = useState({ time: '09:00', type: 'sight', title: '', loc: '', image: '', desc: '', subItems: [] });
+            const [newSubText, setNewSubText] = useState('');
+            const [newSubType, setNewSubType] = useState('buy');
+            useEffect(() => { if (isOpen) { setFormData(initialData || { time: '09:00', type: 'sight', title: '', loc: '', image: '', desc: '', subItems: [] }); setNewSubText(''); } }, [isOpen, initialData]);
+            const handleAddSubItem = () => {
+                if (!newSubText.trim()) return;
+                const newItem = { id: generateId(), type: newSubType, text: newSubText, checked: false };
+                setFormData(prev => ({ ...prev, subItems: [...(prev.subItems || []), newItem] }));
+                setNewSubText('');
+            };
+            const removeSubItem = (id) => { setFormData(prev => ({ ...prev, subItems: (prev.subItems || []).filter(i => i.id !== id) })); };
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[70]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-8 pb-safe shadow-2xl transform transition-transform duration-300 h-[90vh] flex flex-col animate-slide-up">
+                        <div className="w-10 h-1 bg-slate-200/70 rounded-full mx-auto mb-8"></div>
+                        <h3 className="text-xl font-bold text-charcoal mb-8 tracking-wide">{initialData ? '編輯行程' : '新增行程'}</h3>
+                        <div className="space-y-6 flex-1 overflow-y-auto hide-scrollbar">
+                            <div className="flex gap-4">
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">時間</label><input type="time" value={formData.time} onChange={(e) => setFormData({...formData, time: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 font-mono text-lg focus:border-matcha outline-none transition-colors" /></div>
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">類型</label><select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-lg focus:border-matcha outline-none"><option value="sight">📷 景點</option><option value="food">🍜 美食</option><option value="transport">🚅 交通</option><option value="hotel">🏨 住宿</option></select></div>
+                            </div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">標題</label><input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="請輸入標題" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">地點</label><input type="text" value={formData.loc} onChange={(e) => setFormData({...formData, loc: e.target.value})} placeholder="例如：淺草" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div className="bg-white p-4 rounded-xl border border-subtle"><label className="text-xs uppercase font-bold text-slate-400 block mb-3">子項目 (必吃/必買)</label><div className="flex gap-2 mb-3"><select value={newSubType} onChange={(e) => setNewSubType(e.target.value)} className="bg-slate-100 rounded-lg text-xs p-2 outline-none"><option value="buy">🛍️</option><option value="eat">🍴</option><option value="do">✨</option></select><input type="text" value={newSubText} onChange={(e) => setNewSubText(e.target.value)} placeholder="新增子項目..." className="flex-1 bg-slate-50 border-b border-subtle px-2 text-sm focus:border-matcha outline-none" /><button onClick={handleAddSubItem} type="button" className="text-matcha font-bold px-2">+</button></div><div className="space-y-2">{formData.subItems?.map(item => (<div key={item.id} className="flex justify-between items-center text-sm bg-slate-50 p-2 rounded"><span>{item.type === 'buy' ? '🛍️' : item.type === 'eat' ? '🍴' : '✨'} {item.text}</span><button type="button" onClick={() => removeSubItem(item.id)} className="text-red-400"><i className="fa-solid fa-xmark"></i></button></div>))}</div></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">筆記</label><textarea value={formData.desc || ''} onChange={(e) => setFormData({...formData, desc: e.target.value})} rows={3} placeholder="寫點什麼..." className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none"></textarea></div>
+                        </div>
+                        <div className="mt-8 flex gap-4">
+                            {initialData && onDelete && (<button type="button" onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle active:bg-red-50 transition-colors tracking-wider">刪除</button>)}
+                            <button type="button" onClick={() => onSave(formData)} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition-transform tracking-wider shadow-lg shadow-matcha/20">儲存</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const DetailModal = ({ event, onClose, onEdit }) => {
+            if (!event) return null;
+            return (
+                <div className="fixed inset-0 z-[60]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-white rounded-t-[24px] overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto animate-slide-up">
+                        <div className="relative h-72">
+                            <img src={event.image || 'https://images.unsplash.com/photo-1480796927426-f609979314bd?q=80&w=800&auto=format&fit=crop'} className="w-full h-full object-cover" alt={event.title} onError={(e) => e.target.src = 'https://placehold.co/600x400/eceae6/a0a09e?text=NO+IMAGE'} />
+                            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent"></div>
+                            <button onClick={onClose} className="absolute top-5 right-5 bg-black/20 text-white/90 rounded-full w-8 h-8 flex items-center justify-center backdrop-blur-md active:bg-black/40 transition-colors"><i className="fa-solid fa-xmark"></i></button>
+                            <div className="absolute bottom-6 left-6 text-white pr-4">
+                                <span className="text-[10px] font-bold px-2 py-1 bg-white/20 backdrop-blur-md rounded mb-3 inline-block tracking-wider uppercase">{event.type}</span>
+                                <h2 className="text-3xl font-bold leading-tight tracking-wide drop-shadow-md">{event.title}</h2>
+                                <p className="text-sm opacity-90 mt-2 font-medium flex items-center"><i className="fa-solid fa-location-dot mr-1.5 text-xs"></i>{event.loc || '未知地點'}</p>
+                            </div>
+                            <button onClick={onEdit} className="absolute -bottom-6 right-6 bg-matcha text-white rounded-2xl w-12 h-12 flex items-center justify-center shadow-lg active:scale-95 transition-transform z-20"><i className="fa-solid fa-pen"></i></button>
+                        </div>
+                        <div className="p-8 pt-12 pb-28 space-y-6 bg-rice">
+                            {event.subItems && event.subItems.length > 0 && (<div className="mb-6"><h4 className="text-xs font-bold text-slate-400 uppercase mb-3 tracking-widest">必做清單</h4><div className="space-y-2">{event.subItems.map(item => (<div key={item.id} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-subtle"><div className={`w-5 h-5 rounded flex items-center justify-center text-[10px] ${item.checked ? 'bg-matcha text-white' : 'bg-slate-100 text-slate-400'}`}>{item.checked && <i className="fa-solid fa-check"></i>}</div><span className={`text-sm ${item.checked ? 'line-through text-slate-400' : 'text-charcoal'}`}>{item.type === 'buy' ? '🛍️' : item.type === 'eat' ? '🍴' : '✨'} {item.text}</span></div>))}</div></div>)}
+                            {event.tags && (<div className="flex flex-wrap gap-2">{event.tags.map(tag => (<span key={tag} className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold tracking-wider">#{tag}</span>))}</div>)}
+                            <div className="text-charcoal leading-relaxed tracking-wide"><h4 className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-widest">關於</h4><p className="whitespace-pre-line">{event.desc || '暫無詳細描述。'}</p></div>
+                            {event.note && (<div className="bg-[#f4f1e8] p-4 rounded-xl border-l-2 border-matcha"><p className="text-xs font-bold text-matcha uppercase mb-1 tracking-widest">TIPS</p><p className="text-sm text-charcoal/80">{event.note}</p></div>)}
+                            <div className="flex gap-4 pt-4"><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((event.loc || '') + ' ' + event.title)}`} target="_blank" rel="noreferrer" className="flex-1 border border-subtle text-charcoal py-3.5 rounded-2xl font-bold text-center active:bg-slate-50 transition-colors text-sm tracking-wider">導航</a><a href={`https://www.google.com/search?q=${encodeURIComponent(event.title)}`} target="_blank" rel="noreferrer" className="flex-1 bg-charcoal text-white py-3.5 rounded-2xl font-bold text-center active:bg-charcoal/90 transition-colors text-sm tracking-wider">搜尋</a></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TransportModal = ({ isOpen, initialData, onClose, onSave }) => {
+            const [formData, setFormData] = useState({ mode: 'train', duration: '10m', note: '', url: '' });
+            useEffect(() => { if (isOpen) setFormData(initialData || { mode: 'train', duration: '15m', note: '', url: '' }); }, [isOpen, initialData]);
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[75]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-6 pb-safe shadow-2xl animate-slide-up">
+                        <div className="w-10 h-1 bg-slate-200/70 rounded-full mx-auto mb-6"></div>
+                        <h3 className="text-lg font-bold text-charcoal mb-6">交通方式</h3>
+                        <div className="space-y-4">
+                            <div className="flex gap-4"><div className="flex-1"><label className="text-xs font-bold text-slate-400 block mb-1">方式</label><select value={formData.mode} onChange={(e) => setFormData({...formData, mode: e.target.value})} className="w-full bg-white p-3 rounded-xl border border-subtle outline-none"><option value="train">電車/地鐵</option><option value="walk">步行</option><option value="taxi">計程車</option><option value="bus">巴士</option><option value="other">其他</option></select></div><div className="flex-1"><label className="text-xs font-bold text-slate-400 block mb-1">預估時間</label><input type="text" value={formData.duration} onChange={(e) => setFormData({...formData, duration: e.target.value})} className="w-full bg-white p-3 rounded-xl border border-subtle outline-none" placeholder="ex: 15m" /></div></div>
+                            <div><label className="text-xs font-bold text-slate-400 block mb-1">說明</label><input type="text" value={formData.note || ''} onChange={(e) => setFormData({...formData, note: e.target.value})} className="w-full bg-white p-3 rounded-xl border border-subtle outline-none" placeholder="ex: 山手線 (外回)" /></div>
+                            <div><label className="text-xs font-bold text-slate-400 block mb-1">Google Maps 連結</label><input type="text" value={formData.url || ''} onChange={(e) => setFormData({...formData, url: e.target.value})} className="w-full bg-white p-3 rounded-xl border border-subtle outline-none text-sm" placeholder="https://maps.app.goo.gl/..." /></div>
+                            <div className="flex gap-3 pt-2">{formData.url && (<a href={formData.url} target="_blank" rel="noreferrer" className="flex-1 border border-subtle text-slate-500 py-3 rounded-xl font-bold text-center">開啟地圖</a>)}<button onClick={() => onSave(undefined)} className="flex-1 text-red-400 border border-red-100 py-3 rounded-xl font-bold">清除</button><button onClick={() => onSave(formData)} className="flex-[2] bg-matcha text-white py-3 rounded-xl font-bold shadow-lg shadow-matcha/20">儲存</button></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const InfoView = ({ reservations, onEdit, onAdd }) => {
+            const getStatusColor = (status) => { switch(status) { case 'booked': return 'bg-matcha/10 text-matcha'; case 'to-book': return 'bg-orange-100 text-orange-500'; default: return 'bg-slate-100 text-slate-500'; } };
+            const getStatusText = (status) => { switch(status) { case 'booked': return '已預訂'; case 'to-book': return '待預訂'; default: return '處理中'; } };
+            const getTypeIcon = (type) => { switch(type) { case 'flight': return 'fa-plane'; case 'hotel': return 'fa-bed'; case 'restaurant': return 'fa-utensils'; default: return 'fa-ticket'; } };
+            return (
+                <div className="px-6 space-y-6 pb-24 tracking-wide pt-6">
+                    <div className="grid grid-cols-2 gap-4"><a href="https://vjw-lp.digital.go.jp/zh-hant/" target="_blank" rel="noreferrer" className="bg-blue-50 p-4 rounded-2xl flex flex-col items-center justify-center text-center active:scale-95 transition-transform border border-blue-100"><i className="fa-solid fa-qrcode text-2xl text-blue-500 mb-2"></i><span className="text-xs font-bold text-blue-900">Visit Japan Web</span></a><a href="https://www.google.com/maps" target="_blank" rel="noreferrer" className="bg-green-50 p-4 rounded-2xl flex flex-col items-center justify-center text-center active:scale-95 transition-transform border border-green-100"><i className="fa-solid fa-map-location-dot text-2xl text-green-600 mb-2"></i><span className="text-xs font-bold text-green-900">Google Maps</span></a></div>
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-subtle"><h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">緊急聯絡</h3><div className="space-y-4"><div className="flex justify-between items-center border-b border-slate-50 pb-3"><div><div className="font-bold text-charcoal">旅外國人急難救助</div><div className="text-xs text-slate-400 mt-1">日本境內直撥</div></div><a href="tel:08010097179" className="text-red-500 font-mono font-bold text-lg">080-1009-7179</a></div><div className="flex justify-between items-center"><div className="flex gap-4"><div><span className="text-xs text-slate-400 block">報警</span><span className="font-bold text-xl">110</span></div><div><span className="text-xs text-slate-400 block">救護</span><span className="font-bold text-xl">119</span></div></div></div></div></div>
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-subtle"><div className="flex justify-between items-center mb-4"><h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">預訂與票券</h3><button onClick={onAdd} className="text-xs bg-[#f4f1e8] text-matcha px-3 py-1 rounded-full font-bold hover:bg-subtle transition-colors"><i className="fa-solid fa-plus mr-1"></i>新增</button></div><div className="space-y-6">{reservations.map(res => (<div key={res.id} onClick={() => onEdit(res)} className="relative pl-4 border-l-2 border-slate-100 cursor-pointer active:opacity-70 transition-opacity group"><div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-slate-200 group-hover:bg-matcha transition-colors"></div><div className="flex justify-between items-start mb-1"><span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><i className={`fa-solid ${getTypeIcon(res.type)} text-[10px]`}></i> {res.type}</span><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getStatusColor(res.status)}`}>{getStatusText(res.status)}</span></div><div className="text-base font-bold text-charcoal">{res.name}</div><div className="text-sm text-slate-500 mt-1 font-mono">{res.dateTime}</div>{res.refNumber && <div className="text-xs font-mono text-slate-400 mt-1">REF: {res.refNumber}</div>}{res.notes && <div className="text-xs text-matcha mt-1 bg-matcha/5 p-2 rounded">{res.notes}</div>}</div>))}{reservations.length === 0 && <div className="text-center text-slate-300 text-sm py-2">尚無預訂紀錄</div>}</div></div>
+                </div>
+            );
+        };
+
+        const ReservationModal = ({ isOpen, initialData, onClose, onSave, onDelete }) => {
+            const [formData, setFormData] = useState({ type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' });
+            useEffect(() => { if (isOpen) setFormData(initialData || { type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' }); }, [isOpen, initialData]);
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[70]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-8 pb-safe shadow-2xl transform transition-transform duration-300 max-h-[90vh] flex flex-col overflow-y-auto animate-slide-up">
+                        <div className="w-10 h-1 bg-slate-200/70 rounded-full mx-auto mb-8 flex-shrink-0"></div>
+                        <h3 className="text-xl font-bold text-charcoal mb-6 tracking-wide flex-shrink-0">{initialData ? '編輯預訂' : '新增預訂'}</h3>
+                        <div className="space-y-6 flex-1 overflow-y-auto hide-scrollbar pb-4">
+                            <div className="flex gap-4"><div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">類型</label><select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none"><option value="flight">✈️ 航班</option><option value="hotel">🏨 住宿</option><option value="restaurant">🍽️ 餐廳</option><option value="ticket">🎫 票券</option></select></div><div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">狀態</label><select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none"><option value="booked">✅ 已預訂</option><option value="pending">⏳ 處理中</option><option value="to-book">⚠️ 待預訂</option></select></div></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">名稱</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="例如：Skyliner 車票" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">時間 / 日期</label><input type="text" value={formData.dateTime} onChange={(e) => setFormData({...formData, dateTime: e.target.value})} placeholder="例如：1/28 14:00" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">參考編號 (選填)</label><input type="text" value={formData.refNumber || ''} onChange={(e) => setFormData({...formData, refNumber: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base font-mono focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">備註</label><textarea value={formData.notes || ''} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none" /></div>
+                        </div>
+                        <div className="mt-8 flex gap-4 flex-shrink-0">
+                            {initialData && onDelete && (<button type="button" onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle active:bg-red-50 transition-colors tracking-wider">刪除</button>)}
+                            <button type="button" onClick={() => onSave(formData)} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition-transform tracking-wider shadow-lg shadow-matcha/20">儲存</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PackingListView = ({ items, onToggle, onAdd, onDelete }) => {
+            const [newItemText, setNewItemText] = useState('');
+            const grouped = items.reduce((acc, item) => { if (!acc[item.category]) acc[item.category] = []; acc[item.category].push(item); return acc; }, {});
+            const progress = items.length > 0 ? Math.round((items.filter(i => i.checked).length / items.length) * 100) : 0;
+            const handleQuickAdd = (e) => { e.preventDefault(); if (newItemText.trim()) { onAdd(newItemText, '自訂'); setNewItemText(''); } };
+            return (
+                <div className="px-6 pb-32 pt-6">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-subtle mb-8"><div className="flex justify-between items-end mb-2"><h2 className="text-lg font-bold text-charcoal">行李清單</h2><span className="text-2xl font-mono font-bold text-matcha">{progress}%</span></div><div className="h-2 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-matcha transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div></div></div>
+                    <form onSubmit={handleQuickAdd} className="mb-8 relative"><input type="text" value={newItemText} onChange={(e) => setNewItemText(e.target.value)} placeholder="新增物品..." className="w-full bg-rice border border-subtle rounded-xl py-3 pl-4 pr-12 focus:border-matcha focus:bg-white transition-all outline-none" /><button type="submit" className="absolute right-2 top-2 w-8 h-8 bg-matcha text-white rounded-lg flex items-center justify-center active:scale-95 transition-transform"><i className="fa-solid fa-plus text-xs"></i></button></form>
+                    <div className="space-y-8">{Object.entries(grouped).map(([category, groupItems]) => (<div key={category}><h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">{category}</h3><div className="bg-white rounded-2xl overflow-hidden border border-subtle divide-y divide-subtle">{groupItems.map(item => (<div key={item.id} className="p-4 flex items-center group relative"><div className="flex-1 flex items-center cursor-pointer" onClick={() => onToggle(item.id)}><div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 transition-colors flex-shrink-0 ${item.checked ? 'bg-matcha border-matcha' : 'border-slate-300'}`}>{item.checked && <i className="fa-solid fa-check text-white text-xs"></i>}</div><span className={`flex-1 font-medium transition-opacity ${item.checked ? 'text-slate-400 line-through opacity-70' : 'text-charcoal'}`}>{item.text}</span></div><button onClick={() => onDelete(item.id)} className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-400 transition-colors"><i className="fa-solid fa-trash-can"></i></button></div>))}</div></div>))}</div>
+                </div>
+            );
+        };
+
+        const MoneyView = ({ expenses, members, currencyRate, currentCurrency, onDelete }) => {
+            const balances = {}; members.forEach(m => balances[m] = 0);
+            let totalSpent = 0;
+            expenses.forEach(ex => { totalSpent += ex.amount; balances[ex.payer] += ex.amount; const share = ex.amount / ex.involved.length; ex.involved.forEach(p => { balances[p] -= share; }); });
+            const formatMoney = (amount) => { if (currentCurrency === 'JPY') return `¥${Math.round(amount).toLocaleString()}`; return `NT$${Math.round(amount * currencyRate).toLocaleString()}`; };
+            return (
+                <div className="px-6 pb-32 tracking-wide pt-6">
+                    <div className="mb-10 text-center"><span className="text-xs text-slate-400 uppercase font-bold tracking-widest">Total Expenses</span><div className="text-4xl font-black mt-2 text-charcoal font-mono">¥{totalSpent.toLocaleString()}</div><div className="text-sm text-slate-500 mt-2 font-medium">≈ NT${Math.round(totalSpent * currencyRate).toLocaleString()}</div></div>
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">Balances</h3><div className="grid grid-cols-3 gap-4 mb-10">{Object.keys(balances).map(m => { const bal = balances[m]; const isPos = bal >= 0; return (<div key={m} className={`rounded-xl p-4 text-center border border-subtle ${isPos ? 'bg-[#f0f4ef]' : 'bg-red-50'}`}><div className="text-xs text-slate-500 font-bold mb-2">{m}</div><div className={`font-bold text-base font-mono ${isPos ? 'text-matcha' : 'text-red-400'}`}>{formatMoney(Math.abs(bal))}</div><div className={`text-[10px] opacity-70 mt-1 font-medium ${isPos ? 'text-matcha' : 'text-red-400'}`}>{isPos ? '收' : '付'}</div></div>); })}</div>
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">History</h3><div className="bg-white rounded-2xl border border-subtle divide-y divide-subtle">{expenses.length === 0 ? (<div className="text-center text-slate-300 py-8 text-sm font-medium">尚無消費紀錄</div>) : ([...expenses].reverse().map((ex) => (<div key={ex.id} className="flex justify-between items-center p-4"><div><div className="font-bold text-charcoal text-base">{ex.title}</div><div className="text-xs text-slate-400 mt-1 font-medium">由 <span className="text-slate-600">{ex.payer}</span> 支付</div></div><div className="text-right"><div className="font-bold text-charcoal font-mono">¥{ex.amount.toLocaleString()}</div><button onClick={() => onDelete(ex.id)} className="text-xs text-slate-300 mt-2 px-2 py-1 hover:text-red-400 transition-colors">刪除</button></div></div>)))}</div>
+                </div>
+            );
+        };
+
+        const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal }) => {
+            const isManualScroll = useRef(false);
+            useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    if (isManualScroll.current) return;
+                    const visibleDay = entries.find(e => e.isIntersecting);
+                    if (visibleDay) {
+                        const id = visibleDay.target.id;
+                        const idx = parseInt(id.replace('day-', ''));
+                        if (!isNaN(idx) && idx !== currentDayIdx) onDaySelect(idx); 
+                    }
+                }, { root: null, rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+                days.forEach((_, idx) => { const el = document.getElementById(`day-${idx}`); if (el) observer.observe(el); });
+                return () => observer.disconnect();
+            }, [days, currentDayIdx, onDaySelect]);
+            const handleDayClick = (idx) => {
+                isManualScroll.current = true;
+                onDaySelect(idx);
+                const el = document.getElementById(`day-${idx}`);
+                if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => { isManualScroll.current = false; }, 600); }
+            };
+            return (
+                <div className="px-6 pb-32">
+                    <div className="flex overflow-x-auto gap-5 py-4 hide-scrollbar sticky top-[60px] z-30 bg-rice/95 backdrop-blur -mx-6 px-6 mb-6 transition-all">{days.map((day, idx) => (<button key={idx} onClick={() => handleDayClick(idx)} className={`flex-shrink-0 text-center min-w-[48px] transition-all duration-300 group ${currentDayIdx === idx ? 'text-matcha scale-110' : 'text-slate-400 opacity-70'}`}><div className="text-[10px] font-bold uppercase tracking-widest mb-1">{day.weekday}</div><div className="text-xl font-bold font-mono relative">{day.date.split('/')[1] || day.date}{currentDayIdx === idx && (<div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-matcha"></div>)}</div></button>))}</div>
+                    <div className="space-y-12">{days.map((day, dIdx) => (<div id={`day-${dIdx}`} key={dIdx} className="scroll-mt-40 transition-opacity duration-500"><div className="mb-6 px-1"><div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-400 tracking-widest uppercase">{day.date} · {day.weekday}</span><span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md"><i className="fa-solid fa-cloud-sun mr-1"></i>{day.weather}</span></div><h2 className="text-2xl font-bold text-charcoal mt-2 tracking-wide">{day.title}</h2></div><MealOptions mealData={day.mealOptions} onAdd={(type) => onAddMeal(dIdx, type)} onEdit={(type, option) => onEditMeal(dIdx, type, option)} /><div className="relative ml-2.5 pl-8 space-y-0 pb-4"><div className="absolute left-[10px] top-4 bottom-4 w-0.5 bg-slate-100 -z-10"></div>{day.events.map((ev, eIdx) => (<div key={ev.id}><EventCard event={ev} onClick={() => onEventClick(dIdx, ev)} />{eIdx < day.events.length - 1 && (<TransportConnector data={ev.transitToNext} onClick={() => onTransportClick(dIdx, ev.id)} />)}</div>))}<div className="h-8 border-l-2 border-slate-100 ml-[10px]"></div><button onClick={() => onAddEvent(dIdx)} className="w-full py-4 border-2 border-dashed border-subtle rounded-xl text-slate-400 text-sm font-bold hover:border-matcha hover:text-matcha transition-colors">+ 新增行程</button></div></div>))}</div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const STORAGE_KEY = 'tokyoTripFinal_V9_Bundle';
+            const [view, setView] = useState('itinerary');
+            const [data, setData] = useState(DEFAULT_DATA);
+            const [currentDayIdx, setCurrentDayIdx] = useState(0);
+            const [currency, setCurrency] = useState('JPY');
+            const [liveWeather, setLiveWeather] = useState(null);
+            
+            const [detailEvent, setDetailEvent] = useState(null);
+            const [editingEvent, setEditingEvent] = useState(null);
+            const [editingTransport, setEditingTransport] = useState(null);
+            const [editingMeal, setEditingMeal] = useState(null);
+            const [editingReservation, setEditingReservation] = useState(null);
+
+            useEffect(() => {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.days) {
+                            parsed.days.forEach((day) => {
+                                if (!day.mealOptions) day.mealOptions = { breakfast: [], lunch: [], dinner: [] };
+                                day.events.forEach((ev) => { if (!ev.subItems) ev.subItems = []; });
+                            });
+                        }
+                        setData({ ...DEFAULT_DATA, ...parsed });
+                    } catch (e) { console.error("Data load failed", e); }
+                }
+            }, []);
+            useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }, [data]);
+            useEffect(() => {
+                const currentDay = data.days[currentDayIdx];
+                if (currentDay && currentDay.locationKey) {
+                    const loc = LOCATIONS[currentDay.locationKey];
+                    if (loc) {
+                        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`).then(res => res.json()).then(d => { if(d.current_weather) { setLiveWeather({ temp: Math.round(d.current_weather.temperature), code: d.current_weather.weathercode }); } }).catch(e => console.error(e));
+                    }
+                }
+            }, [currentDayIdx, data.days]);
+
+            const handleSaveEvent = (eventData) => {
+                if (!editingEvent) return;
+                const newData = { ...data };
+                if (editingEvent.eventId) {
+                    const dayEvents = newData.days[editingEvent.dayIdx].events;
+                    const idx = dayEvents.findIndex(e => e.id === editingEvent.eventId);
+                    if (idx >= 0) dayEvents[idx] = { ...dayEvents[idx], ...eventData };
+                } else {
+                    newData.days[editingEvent.dayIdx].events.push({ ...eventData, id: generateId() });
+                    newData.days[editingEvent.dayIdx].events.sort((a, b) => a.time.localeCompare(b.time));
+                }
+                setData(newData);
+                setEditingEvent(null);
+                setDetailEvent(null);
+            };
+            const handleDeleteEvent = () => {
+                if (!editingEvent?.eventId) return;
+                Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonText: '刪除', cancelButtonText: '取消', confirmButtonColor: '#ef4444' }).then((result) => {
+                    if (result.isConfirmed) {
+                        const newData = { ...data };
+                        newData.days[editingEvent.dayIdx].events = newData.days[editingEvent.dayIdx].events.filter(e => e.id !== editingEvent.eventId);
+                        setData(newData);
+                        setEditingEvent(null);
+                    }
+                });
+            };
+            const handleSaveTransport = (transportData) => {
+                if (!editingTransport) return;
+                const newData = { ...data };
+                const dayEvents = newData.days[editingTransport.dayIdx].events;
+                const idx = dayEvents.findIndex(e => e.id === editingTransport.eventId);
+                if (idx >= 0) { dayEvents[idx].transitToNext = transportData; }
+                setData(newData);
+                setEditingTransport(null);
+            };
+            const handleSaveMeal = (mealData) => {
+                if (!editingMeal) return;
+                const newData = { ...data };
+                const list = newData.days[editingMeal.dayIdx].mealOptions[editingMeal.type];
+                if (editingMeal.option) { const idx = list.findIndex(m => m.id === editingMeal.option.id); if (idx >= 0) list[idx] = mealData; } else { list.push(mealData); }
+                setData(newData);
+                setEditingMeal(null);
+            };
+            const handleDeleteMeal = () => {
+                if (!editingMeal?.option) return;
+                Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonText: '刪除', cancelButtonText: '取消', confirmButtonColor: '#ef4444' }).then((result) => {
+                    if (result.isConfirmed) {
+                        const newData = { ...data };
+                        const list = newData.days[editingMeal.dayIdx].mealOptions[editingMeal.type];
+                        newData.days[editingMeal.dayIdx].mealOptions[editingMeal.type] = list.filter(m => m.id !== editingMeal.option.id);
+                        setData(newData);
+                        setEditingMeal(null);
+                    }
+                });
+            }
+            const handleSaveReservation = (resData) => {
+                const newData = { ...data };
+                if (editingReservation?.id) { const idx = newData.reservations.findIndex(r => r.id === editingReservation.id); if (idx >= 0) newData.reservations[idx] = { ...newData.reservations[idx], ...resData }; } else { newData.reservations.push({ ...resData, id: generateId() }); }
+                setData(newData);
+                setEditingReservation(null);
+            };
+            const handleDeleteReservation = () => {
+                if (!editingReservation?.id) return;
+                Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonText: '刪除', cancelButtonText: '取消', confirmButtonColor: '#ef4444' }).then((result) => { if (result.isConfirmed) { const newData = { ...data }; newData.reservations = newData.reservations.filter(r => r.id !== editingReservation.id); setData(newData); setEditingReservation(null); } });
+            };
+            const handleTogglePacking = (id) => { const newData = { ...data }; const item = newData.packingList.find(i => i.id === id); if (item) item.checked = !item.checked; setData(newData); };
+            const handleAddPackingItem = (text, category) => { const newData = { ...data }; newData.packingList.push({ id: generateId(), text, category, checked: false }); setData(newData); };
+            const handleDeletePackingItem = (id) => { const newData = { ...data }; newData.packingList = newData.packingList.filter(i => i.id !== id); setData(newData); };
+            const handleAddExpense = async () => {
+                const { value: formValues } = await Swal.fire({
+                    title: '<span class="text-charcoal font-bold">新增支出 (JPY)</span>',
+                    html: `
+                        <div class="space-y-4 text-left">
+                            <input id="swal-item" class="w-full p-2 border-b border-subtle outline-none font-medium" placeholder="項目 (如: 晚餐)">
+                            <input id="swal-amount" type="number" class="w-full p-2 border-b border-subtle outline-none font-mono font-bold" placeholder="金額 (日幣)">
+                            <div class="pt-2"><label class="text-xs font-bold text-slate-400 uppercase tracking-widest">先付者</label><select id="swal-payer" class="w-full p-2 border-b border-subtle outline-none bg-transparent font-medium mt-1">${data.members.map(m => `<option value="${m}">${m}</option>`).join('')}</select></div>
+                        </div>
+                    `,
+                    focusConfirm: false, showCancelButton: true, confirmButtonText: '新增', cancelButtonText: '取消', confirmButtonColor: '#6a7f60',
+                    preConfirm: () => {
+                        const item = document.getElementById('swal-item').value;
+                        const amount = document.getElementById('swal-amount').value;
+                        const payer = document.getElementById('swal-payer').value;
+                        return [item, amount, payer];
+                    }
+                });
+                if (formValues) {
+                    const [title, amount, payer] = formValues;
+                    if (!title || !amount) return;
+                    const newExpense = { id: generateId(), title, amount: parseInt(amount), payer, involved: data.members, date: new Date().toISOString() };
+                    setData({ ...data, expenses: [...data.expenses, newExpense] });
+                }
+            };
+            const handleDeleteExpense = (id) => { setData({ ...data, expenses: data.expenses.filter(e => e.id !== id) }); };
+
+            return (
+                <div className="min-h-screen bg-rice font-sans text-charcoal">
+                    <header className="fixed top-0 w-full z-40 bg-rice/95 backdrop-blur-md transition-all duration-300 pt-safe border-b border-subtle">
+                        <div className="flex justify-between items-end px-6 py-4 pb-3">
+                            <div><p className="text-xs text-slate-400 font-medium tracking-widest uppercase mb-1">Tokyo Trip</p><h1 className="text-2xl font-bold tracking-wide text-charcoal">東京七日</h1></div>
+                            <div className="flex items-center gap-3">
+                                {liveWeather ? (<div className="text-sm font-medium text-slate-500 flex items-center bg-slate-100 px-3 py-1 rounded-full"><i className={`fa-solid ${getWeatherIcon(liveWeather.code)} text-slate-400 mr-2`}></i><span>{data.days[currentDayIdx].locationKey === 'tokyo' ? '東京' : LOCATIONS[data.days[currentDayIdx].locationKey].name} {liveWeather.temp}°C</span></div>) : (<div className="text-sm font-medium text-slate-300"><i className="fa-solid fa-spinner fa-spin"></i></div>)}
+                                <button onClick={() => setCurrency(c => c === 'JPY' ? 'TWD' : 'JPY')} className="text-xs border border-subtle text-slate-500 px-3 py-1.5 rounded-full font-bold active:bg-slate-100 transition-colors tracking-wider">{currency}</button>
+                            </div>
+                        </div>
+                    </header>
+                    <main className="pt-24 max-w-lg mx-auto">
+                        {view === 'itinerary' && (<ItineraryView days={data.days} currentDayIdx={currentDayIdx} onDaySelect={setCurrentDayIdx} onEventClick={(dIdx, ev) => setDetailEvent({ dayIdx: dIdx, event: ev })} onTransportClick={(dIdx, eId) => setEditingTransport({ dayIdx: dIdx, eventId: eId })} onAddEvent={(dIdx) => setEditingEvent({ dayIdx: dIdx })} onAddMeal={(dIdx, type) => setEditingMeal({ dayIdx: dIdx, type })} onEditMeal={(dIdx, type, option) => setEditingMeal({ dayIdx: dIdx, type, option })} />)}
+                        {view === 'info' && (<InfoView reservations={data.reservations} onEdit={(res) => setEditingReservation({ id: res.id, initial: res })} onAdd={() => setEditingReservation({})} />)}
+                        {view === 'money' && (<MoneyView expenses={data.expenses} members={data.members} currencyRate={data.currencyRate} currentCurrency={currency} onDelete={handleDeleteExpense} />)}
+                        {view === 'packing' && (<PackingListView items={data.packingList} onToggle={handleTogglePacking} onAdd={handleAddPackingItem} onDelete={handleDeletePackingItem} />)}
+                    </main>
+                    <nav className="fixed bottom-0 w-full bg-rice/95 backdrop-blur-md border-t border-subtle pb-safe z-30 max-w-lg mx-auto left-0 right-0">
+                        <div className="flex justify-around items-center h-[60px]">
+                            <button onClick={() => setView('itinerary')} className={`flex-1 flex flex-col items-center justify-center h-full transition-colors ${view === 'itinerary' ? 'text-matcha' : 'text-slate-400'}`}><i className="fa-solid fa-map text-xl mb-0.5"></i><span className="text-[9px] font-bold tracking-wider">行程</span></button>
+                            <button onClick={() => setView('packing')} className={`flex-1 flex flex-col items-center justify-center h-full transition-colors ${view === 'packing' ? 'text-matcha' : 'text-slate-400'}`}><i className="fa-solid fa-suitcase text-xl mb-0.5"></i><span className="text-[9px] font-bold tracking-wider">行李</span></button>
+                            <button onClick={() => setView('info')} className={`flex-1 flex flex-col items-center justify-center h-full transition-colors ${view === 'info' ? 'text-matcha' : 'text-slate-400'}`}><i className="fa-solid fa-book text-xl mb-0.5"></i><span className="text-[9px] font-bold tracking-wider">資訊</span></button>
+                            <button onClick={() => setView('money')} className={`flex-1 flex flex-col items-center justify-center h-full transition-colors ${view === 'money' ? 'text-matcha' : 'text-slate-400'}`}><i className="fa-solid fa-coins text-xl mb-0.5"></i><span className="text-[9px] font-bold tracking-wider">分帳</span></button>
+                        </div>
+                    </nav>
+                    {view === 'itinerary' && (<button onClick={() => setEditingEvent({ dayIdx: currentDayIdx })} className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl bg-matcha shadow-xl shadow-matcha/40 flex items-center justify-center text-white z-40 active:scale-90 transition-transform"><i className="fa-solid fa-plus text-xl"></i></button>)}
+                    {view === 'money' && (<button onClick={handleAddExpense} className="fixed bottom-24 right-6 w-14 h-14 rounded-2xl bg-matcha shadow-xl shadow-matcha/40 flex items-center justify-center text-white z-40 active:scale-90 transition-transform"><i className="fa-solid fa-plus text-xl"></i></button>)}
+                    <EventModal isOpen={!!editingEvent} initialData={editingEvent?.eventId ? data.days[editingEvent.dayIdx].events.find(e => e.id === editingEvent.eventId) : undefined} onClose={() => setEditingEvent(null)} onSave={handleSaveEvent} onDelete={editingEvent?.eventId ? handleDeleteEvent : undefined} />
+                    <DetailModal event={detailEvent ? detailEvent.event : null} onClose={() => setDetailEvent(null)} onEdit={() => { if(detailEvent) { setEditingEvent({ dayIdx: detailEvent.dayIdx, eventId: detailEvent.event.id }); setDetailEvent(null); } }} />
+                    <TransportModal isOpen={!!editingTransport} initialData={editingTransport ? data.days[editingTransport.dayIdx].events.find(e => e.id === editingTransport.eventId)?.transitToNext : undefined} onClose={() => setEditingTransport(null)} onSave={handleSaveTransport} />
+                    <ReservationModal isOpen={!!editingReservation} initialData={editingReservation?.initial} onClose={() => setEditingReservation(null)} onSave={handleSaveReservation} onDelete={editingReservation?.id ? handleDeleteReservation : undefined} />
+                    {editingMeal && (<MealModal isOpen={true} type={editingMeal.type} initialData={editingMeal.option} onClose={() => setEditingMeal(null)} onSave={handleSaveMeal} onDelete={editingMeal.option ? handleDeleteMeal : undefined} />)}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>

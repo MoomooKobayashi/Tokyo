@@ -53,7 +53,7 @@ export const PackingListView: React.FC<{ items: PackingItem[], onToggle: (id: st
                     <div key={category}>
                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">{category}</h3>
                         <div className="bg-white rounded-2xl overflow-hidden border border-subtle divide-y divide-subtle">
-                            {groupItems.map(item => (
+                            {(groupItems as PackingItem[]).map(item => (
                                 <div 
                                     key={item.id} 
                                     className="p-4 flex items-center group relative"
