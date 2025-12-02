@@ -11,10 +11,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Tokyo Trip">
     
-    <!-- Icon: Tokyo Tower Photo for Home Screen -->
-    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=180&auto=format&fit=crop">
-    <!-- Icon: Fallback Favicon -->
-    <link rel="icon" type="image/png" href="./icon.png">
+    <!-- Icon: Local Icons -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -133,7 +132,7 @@
                     title: "抵達與橫濱港夜景",
                     weather: "晴時多雲 4-11°C",
                     locationKey: "yokohama",
-                    imageUrl: "./yokohama.jpg",
+                    imageUrl: "yokohama.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "機場貴賓室/便利商店", dish: "飯糰/三明治", priceLevel: "¥500", url: "", locationUrl: "", note: "快速解決" }
@@ -149,36 +148,36 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "08:50", type: "transport", title: "起飛 BR198", loc: "桃園機場 T1", image: "./airport.jpg", note: "06:30 集合", 
+                            id: generateId(), time: "08:50", type: "transport", title: "起飛 BR198", loc: "桃園機場 T1", image: "airport.jpg", note: "06:30 集合", 
                             subItems: [{id: generateId(), type: 'do', text: '領取Wifi機', checked: false}, {id: generateId(), type: 'buy', text: '免稅化妝品', checked: false}],
                             transitToNext: { mode: 'other', duration: '3h 30m', note: '飛行時間' } 
                         },
                         { 
-                            id: generateId(), time: "12:55", type: "transport", title: "抵達", loc: "成田機場 T1", image: "./narita.jpg", note: "領取 Skyliner, Suica",
+                            id: generateId(), time: "12:55", type: "transport", title: "抵達", loc: "成田機場 T1", image: "narita.jpg", note: "領取 Skyliner, Suica",
                             subItems: [{id: generateId(), type: 'buy', text: 'Suica卡 (儲值¥3000)', checked: false}],
                             transitToNext: { mode: 'train', duration: '50m', note: 'Skyliner (成田->京成上野)' }
                         },
                         { 
-                            id: generateId(), time: "14:00", type: "transport", title: "移動：成田→川崎", loc: "Skyliner", image: "./skyliner.jpg", note: "轉 JR 上野東京線",
+                            id: generateId(), time: "14:00", type: "transport", title: "移動：成田→川崎", loc: "Skyliner", image: "skyliner.jpg", note: "轉 JR 上野東京線",
                             transitToNext: { mode: 'train', duration: '40m', note: 'JR 上野東京線 (上野->川崎)' }
                         },
                         { 
-                            id: generateId(), time: "16:00", type: "hotel", title: "Check-in", loc: "Dormy Inn", image: "./kawasaki_inn.jpg", note: "享受迎賓咖啡",
+                            id: generateId(), time: "16:00", type: "hotel", title: "Check-in", loc: "Dormy Inn", image: "kawasaki_inn.jpg", note: "享受迎賓咖啡",
                             subItems: [{id: generateId(), type: 'do', text: '確認溫泉開放時間', checked: false}],
                             transitToNext: { mode: 'train', duration: '20m', note: 'JR京濱東北線 (川崎->櫻木町)' }
                         },
                         { 
-                            id: generateId(), time: "17:30", type: "sight", title: "紅磚倉庫公園", loc: "橫濱", image: "./yo.jpg", tags: ["必拍:夜景"], desc: "充滿異國情調的歷史倉庫群，適合散步拍照。",
+                            id: generateId(), time: "17:30", type: "sight", title: "紅磚倉庫公園", loc: "橫濱", image: "yo.jpg", tags: ["必拍:夜景"], desc: "充滿異國情調的歷史倉庫群，適合散步拍照。",
                             subItems: [{id: generateId(), type: 'buy', text: '橫濱焦糖牛奶糖', checked: false}, {id: generateId(), type: 'eat', text: '崎陽軒燒賣', checked: false}],
                             transitToNext: { mode: 'walk', duration: '10m', note: '步行至運河公園站' }
                         },
                         { 
-                            id: generateId(), time: "20:30", type: "sight", title: "橫濱空中纜車", loc: "櫻木町站", image: "./air_cabin.jpg", note: "單程 1000円，欣賞港未來全景。",
+                            id: generateId(), time: "20:30", type: "sight", title: "橫濱空中纜車", loc: "櫻木町站", image: "air_cabin.jpg", note: "單程 1000円，欣賞港未來全景。",
                             subItems: [{id: generateId(), type: 'do', text: '錄下夜景縮時', checked: false}],
                             transitToNext: { mode: 'train', duration: '15m', note: 'JR京濱東北線回川崎' }
                         },
                         { 
-                            id: generateId(), time: "22:00", type: "food", title: "夜鳴拉麵 & 溫泉", loc: "Dormy Inn", image: "./dormy_ramen.jpg", tags: ["溫泉","免費拉麵","免費冰棒","乳酸飲料"], desc: "飯店招牌服務，泡湯後享用免費醬油拉麵。" 
+                            id: generateId(), time: "22:00", type: "food", title: "夜鳴拉麵 & 溫泉", loc: "Dormy Inn", image: "dormy_ramen.jpg", tags: ["溫泉","免費拉麵","免費冰棒","乳酸飲料"], desc: "飯店招牌服務，泡湯後享用免費醬油拉麵。" 
                         }
                     ]
                 },
@@ -187,7 +186,7 @@
                     title: "湘南海岸與江之島",
                     weather: "晴天 5-12°C",
                     locationKey: "kamakura",
-                    imageUrl: "./bridge_enoshima.jpg",
+                    imageUrl: "bridge_enoshima.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "飯店早餐", dish: "自助餐", priceLevel: "已含", url: "", locationUrl: "", note: "吃飽再出發" }
@@ -203,30 +202,30 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "09:00", type: "sight", title: "新江之島水族館", loc: "江之島", image: "./aqu.jpg", tags: ["推薦:水母廳"], desc: "相模灣大水槽與夢幻水母廳。",
+                            id: generateId(), time: "09:00", type: "sight", title: "新江之島水族館", loc: "江之島", image: "aqu.jpg", tags: ["推薦:水母廳"], desc: "相模灣大水槽與夢幻水母廳。",
                             subItems: [{id: generateId(), type: 'do', text: '看海豚表演', checked: false}, {id: generateId(), type: 'buy', text: '水母玩偶', checked: false}],
                             transitToNext: { mode: 'walk', duration: '10m', note: '步行過橋' }
                         },
                         { 
-                            id: generateId(), time: "11:30", type: "food", title: "仲見世通吃透透", loc: "江之島老街", image: "./street_enoshima.jpg", tags: ["章魚仙貝", "魩仔魚"], desc: "參拜江島神社，購買手扶梯套票，邊走邊吃。", 
+                            id: generateId(), time: "11:30", type: "food", title: "仲見世通吃透透", loc: "江之島老街", image: "street_enoshima.jpg", tags: ["章魚仙貝", "魩仔魚"], desc: "參拜江島神社，購買手扶梯套票，邊走邊吃。", 
                             subItems: [{id: generateId(), type: 'eat', text: '朝日堂 整隻龍蝦仙貝', checked: false}, {id: generateId(), type: 'eat', text: '紀之國屋女夫饅頭', checked: false}],
                             transitToNext: { mode: 'walk', duration: '20m', note: '搭乘手扶梯至頂端' }
                         },
                         { 
-                            id: generateId(), time: "13:00", type: "sight", title: "海蠟燭展望燈塔", loc: "江之島頂", image: "./candle.jpg", desc: "天氣好可眺望富士山。",
+                            id: generateId(), time: "13:00", type: "sight", title: "海蠟燭展望燈塔", loc: "江之島頂", image: "candle.jpg", desc: "天氣好可眺望富士山。",
                             transitToNext: { mode: 'walk', duration: '15m', note: '往下走至奧津宮方向' }
                         },
                         { 
-                            id: generateId(), time: "14:00", type: "food", title: "午餐：魚見亭", loc: "江之島懸崖", image: "./restaurant_enoshima.jpg", tags: ["絕景戶外座"], desc: "坐在懸崖邊看海吃海鮮丼，視野極佳。",
+                            id: generateId(), time: "14:00", type: "food", title: "午餐：魚見亭", loc: "江之島懸崖", image: "restaurant_enoshima.jpg", tags: ["絕景戶外座"], desc: "坐在懸崖邊看海吃海鮮丼，視野極佳。",
                             transitToNext: { mode: 'walk', duration: '10m', note: '步行至岩屋' }
                         },
                         { 
-                            id: generateId(), time: "15:30", type: "sight", title: "岩屋", loc: "江之島後山", image: "./cave.jpg", desc: "海蝕平台與洞窟，絕美夕陽名所。",
+                            id: generateId(), time: "15:30", type: "sight", title: "岩屋", loc: "江之島後山", image: "cave.jpg", desc: "海蝕平台與洞窟，絕美夕陽名所。",
                             subItems: [{id: generateId(), type: 'do', text: '拍富士山夕陽', checked: false}],
                             transitToNext: { mode: 'walk', duration: '20m', note: '搭乘弁天丸遊覽船回橋頭(視風浪)' }
                         },
                         { 
-                            id: generateId(), time: "17:00", type: "transport", title: "湘南單軌電車", loc: "湘南江之島", image: "./monorail.jpg", note: "倒掛式電車，像雲霄飛車般刺激。",
+                            id: generateId(), time: "17:00", type: "transport", title: "湘南單軌電車", loc: "湘南江之島", image: "monorail.jpg", note: "倒掛式電車，像雲霄飛車般刺激。",
                             transitToNext: { mode: 'train', duration: '30m', note: '大船轉車回川崎' }
                         }
                     ]
@@ -236,7 +235,7 @@
                     title: "鎌倉古都與晴空塔",
                     weather: "多雲 4-10°C",
                     locationKey: "kamakura",
-                    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800&auto=format&fit=crop",
+                    imageUrl: "kamakura.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "Bills 七里濱", dish: "Ricotta鬆餅", priceLevel: "¥2200", url: "https://billsjapan.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "需提前兩週預約窗邊位" }
@@ -253,25 +252,25 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "10:00", type: "food", title: "bills 早午餐", loc: "七里ヶ浜", image: "./bills.jpg", tags: ["必吃:鬆餅", "預約"], desc: "號稱世界第一早餐，海景第一排。",
+                            id: generateId(), time: "10:00", type: "food", title: "bills 早午餐", loc: "七里ヶ浜", image: "bills.jpg", tags: ["必吃:鬆餅", "預約"], desc: "號稱世界第一早餐，海景第一排。",
                             transitToNext: { mode: 'train', duration: '15m', note: '江之電 (七里濱->長谷)' }
                         },
                         { 
-                            id: generateId(), time: "12:00", type: "sight", title: "鎌倉大佛", loc: "高德院", image: "./buddha.jpg", desc: "國寶銅造阿彌陀如來坐像。",
+                            id: generateId(), time: "12:00", type: "sight", title: "鎌倉大佛", loc: "高德院", image: "buddha.jpg", desc: "國寶銅造阿彌陀如來坐像。",
                             subItems: [{id: generateId(), type: 'do', text: '進入大佛胎內參觀(¥50)', checked: false}],
                             transitToNext: { mode: 'train', duration: '10m', note: '江之電 (長谷->鎌倉)' }
                         },
                         { 
-                            id: generateId(), time: "13:30", type: "sight", title: "鶴岡八幡宮", loc: "鎌倉", image: "./kamakura.jpg", tags: ["小町通"], desc: "鎌倉地標，參道非常熱鬧，有許多小吃。",
+                            id: generateId(), time: "13:30", type: "sight", title: "鶴岡八幡宮", loc: "鎌倉", image: "kamakura.jpg", tags: ["小町通"], desc: "鎌倉地標，參道非常熱鬧，有許多小吃。",
                             subItems: [{id: generateId(), type: 'buy', text: '豐島屋 鴿子餅乾', checked: false}, {id: generateId(), type: 'eat', text: 'Kamakura Chacha 抹茶霜淇淋', checked: false}, {id: generateId(), type: 'eat', text: '夢見屋 糰子', checked: false}],
                             transitToNext: { mode: 'train', duration: '60m', note: 'JR橫須賀線 -> 淺草線 (直通)' }
                         },
                         { 
-                            id: generateId(), time: "16:00", type: "transport", title: "Check-in 淺草", loc: "東橫INN", image: "./inn.jpg", tags: ["小町通"], note: "寄放行李、稍作休息",
+                            id: generateId(), time: "16:00", type: "transport", title: "Check-in 淺草", loc: "東橫INN", image: "inn.jpg", tags: ["小町通"], note: "寄放行李、稍作休息",
                             transitToNext: { mode: 'train', duration: '5m', note: '淺草線 (淺草->押上)' }
                         },
                         { 
-                            id: generateId(), time: "19:00", type: "food", title: "晴空塔", loc: "押上", image: "./skytree.jpg", tags: ["必逛", "晚餐"], desc: "購物商城，六厘舍沾麵、利久牛舌都在這。",
+                            id: generateId(), time: "19:00", type: "food", title: "晴空塔", loc: "押上", image: "skytree.jpg", tags: ["必逛", "晚餐"], desc: "購物商城，六厘舍沾麵、利久牛舌都在這。",
                             subItems: [{id: generateId(), type: 'buy', text: 'Tokyo Banana (晴空塔限定豹紋)', checked: false}, {id: generateId(), type: 'buy', text: 'Press Butter Sand', checked: false}, {id: generateId(), type: 'do', text: '寶可夢中心', checked: false}]
                         }
                     ]
@@ -281,7 +280,7 @@
                     title: "小江戶川越",
                     weather: "晴天 3-11°C",
                     locationKey: "kawagoe",
-                    imageUrl: "https://images.unsplash.com/photo-1564595346493-7e525384a6e5?q=80&w=800&auto=format&fit=crop",
+                    imageUrl: "oldstreet.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "便利商店", dish: "咖啡/麵包", priceLevel: "¥400", url: "", locationUrl: "", note: "" }
@@ -298,38 +297,38 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "09:00", type: "transport", title: "前往川越", loc: "池袋站", image: "./kawagoePass.png", note: "購買東武川越周遊券",
+                            id: generateId(), time: "09:00", type: "transport", title: "前往川越", loc: "池袋站", image: "kawagoePass.png", note: "購買東武川越周遊券",
                             transitToNext: { mode: 'train', duration: '30m', note: '東武東上線急行' }
                         },
                         { 
-                            id: generateId(), time: "10:30", type: "sight", title: "冰川神社", loc: "川越", image: "./hikawa.jpg", tags: ["體驗:釣鯛魚"], desc: "求姻緣名所，繪馬隧道必拍。",
+                            id: generateId(), time: "10:30", type: "sight", title: "冰川神社", loc: "川越", image: "hikawa.jpg", tags: ["體驗:釣鯛魚"], desc: "求姻緣名所，繪馬隧道必拍。",
                             subItems: [{id: generateId(), type: 'do', text: '釣紅色鯛魚(求平安)', checked: false}, {id: generateId(), type: 'do', text: '釣粉色鯛魚(求良緣)', checked: false}, {id: generateId(), type: 'do', text: '放人形流(除穢)', checked: false}],
                             transitToNext: { mode: 'bus', duration: '10m', note: '東武巴士' }
                         },
                         { 
-                            id: generateId(), time: "12:00", type: "food", title: "川越釜飯 Torisei", loc: "川越", image: "./torisei.jpg", desc: "招牌菜是「川越釜飯定食」（鰻魚塊配川越名物番薯）及「鳥もも炭火焼定食」。",
+                            id: generateId(), time: "12:00", type: "food", title: "川越釜飯 Torisei", loc: "川越", image: "torisei.jpg", desc: "招牌菜是「川越釜飯定食」（鰻魚塊配川越名物番薯）及「鳥もも炭火焼定食」。",
                             transitToNext: { mode: 'walk', duration: '5m', note: '步行' }
                         },
                         { 
-                            id: generateId(), time: "13:00", type: "food", title: "小川菊 鰻魚飯", loc: "川越", image: "./mini_unagi.jpg", tags: ["必吃:鰻魚"], desc: "百年老店，炭烤香氣十足。若太久可改吃'傳米'，傳米有提供迷你鰻魚飯。",
+                            id: generateId(), time: "13:00", type: "food", title: "小川菊 鰻魚飯", loc: "川越", image: "mini_unagi.jpg", tags: ["必吃:鰻魚"], desc: "百年老店，炭烤香氣十足。若太久可改吃'傳米'，傳米有提供迷你鰻魚飯。",
                             transitToNext: { mode: 'walk', duration: '5m', note: '步行至一番街' }
                         },
                         { 
-                            id: generateId(), time: "14:00", type: "sight", title: "藏造老街", loc: "一番街", image: "./oldstreet.jpg", tags: ["龜屋銅鑼燒","川越布丁","小江戶大花-玉子燒"], desc: "在川越的主要街道「小江戶川越一番街商店街」裡...",
+                            id: generateId(), time: "14:00", type: "sight", title: "藏造老街", loc: "一番街", image: "oldstreet.jpg", tags: ["龜屋銅鑼燒","川越布丁","小江戶大花-玉子燒"], desc: "在川越的主要街道「小江戶川越一番街商店街」裡...",
                             subItems: [{id: generateId(), type: 'eat', text: '川越布丁 (川越プリン)', checked: false}, {id: generateId(), type: 'eat', text: '小江戶大花 棍狀玉子燒', checked: false}, {id: generateId(), type: 'eat', text: '紫薯冰淇淋', checked: false}],
                             transitToNext: { mode: 'walk', duration: '5m', note: '步行' }
                         },
                         { 
-                            id: generateId(), time: "15:00", type: "sight", title: "時之鐘", loc: "一番街", image: "./toki.jpg", tags: ["龜屋銅鑼燒"], desc: "時之鐘是一個高約16公尺的木製鐘樓，現在是川越的地標性建築。",
+                            id: generateId(), time: "15:00", type: "sight", title: "時之鐘", loc: "一番街", image: "toki.jpg", tags: ["龜屋銅鑼燒"], desc: "時之鐘是一個高約16公尺的木製鐘樓，現在是川越的地標性建築。",
                             subItems: [{id: generateId(), type: 'buy', text: '龜屋 銅鑼燒', checked: false}],
                             transitToNext: { mode: 'walk', duration: '10m', note: '步行' }
                         },
                         { 
-                            id: generateId(), time: "15:30", type: "sight", title: "大正浪漫夢通", loc: "川越", image: "./taisei.jpg", desc: "位在川越的「大正浪漫夢通り」是一條充滿懷舊氛圍的歷史商店街。",
+                            id: generateId(), time: "15:30", type: "sight", title: "大正浪漫夢通", loc: "川越", image: "taisei.jpg", desc: "位在川越的「大正浪漫夢通り」是一條充滿懷舊氛圍的歷史商店街。",
                             transitToNext: { mode: 'walk', duration: '5m', note: '步行' }
                         },
                         { 
-                            id: generateId(), time: "16:00", type: "sight", title: "熊野神社", loc: "川越", image: "./kumano.jpg", tags:["錢洗弁財天","水晶球","套圈圈"], desc: "川越熊野神社是一座歷史悠久的開運、結緣神社。",
+                            id: generateId(), time: "16:00", type: "sight", title: "熊野神社", loc: "川越", image: "kumano.jpg", tags:["錢洗弁財天","水晶球","套圈圈"], desc: "川越熊野神社是一座歷史悠久的開運、結緣神社。",
                             subItems: [{id: generateId(), type: 'do', text: '洗錢弁財天', checked: false}, {id: generateId(), type: 'do', text: '健康步道', checked: false}],
                             transitToNext: { mode: 'train', duration: '45m', note: '回池袋/淺草' }
                         }
@@ -340,7 +339,7 @@
                     title: "日光世界遺產",
                     weather: "雪/雨 0-5°C",
                     locationKey: "nikko",
-                    imageUrl: "https://images.unsplash.com/photo-1528563351349-6456908d6e45?q=80&w=800&auto=format&fit=crop",
+                    imageUrl: "Toshogu.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "Spacia X 車內販售", dish: "精釀啤酒/咖啡", priceLevel: "¥600", url: "", locationUrl: "", note: "車上Cafe" }
@@ -358,30 +357,30 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "06:00", type: "transport", title: "SPACIA X (去程)", loc: "淺草站", image: "./spaciaX.jpg", tags: ["預約:必須"], desc: "最新奢華觀光列車。",
+                            id: generateId(), time: "06:00", type: "transport", title: "SPACIA X (去程)", loc: "淺草站", image: "spaciaX.jpeg", tags: ["預約:必須"], desc: "最新奢華觀光列車。",
                             subItems: [{id: generateId(), type: 'eat', text: '車內限定 Craft Beer', checked: false}, {id: generateId(), type: 'eat', text: '日光意式冰淇淋', checked: false}],
                             transitToNext: { mode: 'train', duration: '1h 50m', note: '東武日光線' }
                         },
                         { 
-                            id: generateId(), time: "09:30", type: "food", title: "炸湯波饅頭", loc: "日光Sakaeya", image: "./sakaeya.jpg", tags: ["必吃"], desc: "撒上鹽巴的炸豆皮饅頭，甜鹹絕配。",
+                            id: generateId(), time: "09:30", type: "food", title: "炸湯波饅頭", loc: "日光Sakaeya", image: "sakaeya.jpg", tags: ["必吃"], desc: "撒上鹽巴的炸豆皮饅頭，甜鹹絕配。",
                             subItems: [{id: generateId(), type: 'eat', text: '炸湯波饅頭', checked: false}],
                             transitToNext: { mode: 'bus', duration: '10m', note: '世界遺產巡遊巴士' }
                         },
                         { 
-                            id: generateId(), time: "11:00", type: "sight", title: "日光世界遺產二社一寺", loc: "日光", image: "./Toshogu.jpg", tags: ["二荒山神社","東照宮","山輪王寺"], desc: "** 日光東照宮 **\n日光東照宮是供奉江戶幕府第一代將軍德川家康的神社...",
+                            id: generateId(), time: "11:00", type: "sight", title: "日光世界遺產二社一寺", loc: "日光", image: "Toshogu.jpg", tags: ["二荒山神社","東照宮","山輪王寺"], desc: "** 日光東照宮 **\n日光東照宮是供奉江戶幕府第一代將軍德川家康的神社...",
                             subItems: [{id: generateId(), type: 'do', text: '找「眠貓」', checked: false}, {id: generateId(), type: 'do', text: '找「三猿」(非禮勿視...)', checked: false}, {id: generateId(), type: 'do', text: '聽「鳴龍」回音', checked: false}],
                             transitToNext: { mode: 'walk', duration: '10m', note: '步行' }
                         },
                         { 
-                            id: generateId(), time: "13:30", type: "food", title: "湯波料理午餐", loc: "油源", image: "./yuba.jpg", tags: ["湯波御膳"], desc: "日光名產豆皮料理。",
+                            id: generateId(), time: "13:30", type: "food", title: "湯波料理午餐", loc: "油源", image: "yuba.jpg", tags: ["湯波御膳"], desc: "日光名產豆皮料理。",
                             transitToNext: { mode: 'walk', duration: '15m', note: '步行' }
                         },
                         { 
-                            id: generateId(), time: "15:30", type: "sight", title: "神橋", loc: "日光", image: "./hashi.jpg", desc: "朱紅色拱橋與雪景/溪流的對比。上橋要花錢，建議遠看就好。",
+                            id: generateId(), time: "15:30", type: "sight", title: "神橋", loc: "日光", image: "hashi.jpg", desc: "朱紅色拱橋與雪景/溪流的對比。上橋要花錢，建議遠看就好。",
                             transitToNext: { mode: 'bus', duration: '10m', note: '巴士回車站' }
                         },
                         { 
-                            id: generateId(), time: "16:30", type: "transport", title: "SPACIA X (回程)", loc: "東武日光站", image: "./spaciax.jpg", note: "在車上享用日光布丁或啤酒。",
+                            id: generateId(), time: "16:30", type: "transport", title: "SPACIA X (回程)", loc: "東武日光站", image: "spaciax.jpg", note: "在車上享用日光布丁或啤酒。",
                             transitToNext: { mode: 'train', duration: '2h', note: '回淺草' }
                         }
                     ]
@@ -391,7 +390,7 @@
                     title: "東京經典精選",
                     weather: "多雲 5-12°C",
                     locationKey: "tokyo",
-                    imageUrl: "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?q=80&w=800&auto=format&fit=crop",
+                    imageUrl: "tokyo_tower.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "Pelican Cafe", dish: "炭烤吐司", priceLevel: "¥800", url: "https://www.bakerpelican.com/", locationUrl: "https://maps.app.goo.gl/xxx", note: "淺草麵包老舖，需排隊" },
@@ -409,21 +408,21 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "9:00", type: "food", title: "Pelican CAFE", loc: "田原町", image: "./pelican.jpg", tags: ["炭烤吐司"], desc: "淺草麵包老舖「鵜鶘麵包」人氣早餐，必點炸火腿三明治。",
+                            id: generateId(), time: "9:00", type: "food", title: "Pelican CAFE", loc: "田原町", image: "pelican.jpg", tags: ["炭烤吐司"], desc: "淺草麵包老舖「鵜鶘麵包」人氣早餐，必點炸火腿三明治。",
                             transitToNext: { mode: 'walk', duration: '15m', note: '步行至雷門' }
                         },
                         { 
-                            id: generateId(), time: "10:30", type: "sight", title: "淺草寺 & 雷門", loc: "淺草", image: "./asakusa.jpg", tags: ["初訪必去"], desc: "東京最古老寺廟，早上去人較少。",
+                            id: generateId(), time: "10:30", type: "sight", title: "淺草寺 & 雷門", loc: "淺草", image: "asakusa.jpg", tags: ["初訪必去"], desc: "東京最古老寺廟，早上去人較少。",
                             subItems: [{id: generateId(), type: 'do', text: '求籤 (凶要綁在架上)', checked: false}, {id: generateId(), type: 'buy', text: '人形燒', checked: false}, {id: generateId(), type: 'eat', text: '花月堂 菠蘿麵包', checked: false}],
                             transitToNext: { mode: 'train', duration: '20m', note: '銀座線 (淺草->京橋/日本橋)' }
                         },
                         { 
-                            id: generateId(), time: "13:00", type: "sight", title: "東京車站", loc: "丸之內", image: "./station.jpg", tags: ["伴手禮"], desc: "欣賞紅磚車站建築。",
+                            id: generateId(), time: "13:00", type: "sight", title: "東京車站", loc: "丸之內", image: "station.jpg", tags: ["伴手禮"], desc: "欣賞紅磚車站建築。",
                             subItems: [{id: generateId(), type: 'buy', text: 'NY Perfect Cheese', checked: false}, {id: generateId(), type: 'buy', text: 'NewYork City Sand', checked: false}],
                             transitToNext: { mode: 'train', duration: '15m', note: '丸之內線/JR (東京->赤羽橋)' }
                         },
                         { 
-                            id: generateId(), time: "15:00", type: "sight", title: "東京鐵塔", loc: "芝公園", image: "./tokyo_tower.jpg", tags: ["必拍:全景"], desc: "坐在草地上與東京鐵塔合照。",
+                            id: generateId(), time: "15:00", type: "sight", title: "東京鐵塔", loc: "芝公園", image: "tokyo_tower.jpg", tags: ["必拍:全景"], desc: "坐在草地上與東京鐵塔合照。",
                             subItems: [{id: generateId(), type: 'do', text: '拍「地下停車場樓梯」網美照', checked: false}]
                         },
                     ]
@@ -433,7 +432,7 @@
                     title: "歸途",
                     weather: "晴時多雲",
                     locationKey: "tokyo",
-                    imageUrl: "https://images.unsplash.com/photo-1552654835-c468cb398fb8?q=80&w=800&auto=format&fit=crop",
+                    imageUrl: "narita.jpg",
                     mealOptions: {
                         breakfast: [
                             { id: generateId(), name: "飯店早餐", dish: "飯糰", priceLevel: "", url: "", locationUrl: "", note: "" }
@@ -446,20 +445,20 @@
                     },
                     events: [
                         { 
-                            id: generateId(), time: "08:00", type: "hotel", title: "Check-out", loc: "東橫INN", image: "./inn.jpg", note: "檢查護照、錢包。",
+                            id: generateId(), time: "08:00", type: "hotel", title: "Check-out", loc: "東橫INN", image: "inn.jpg", note: "檢查護照、錢包。",
                             transitToNext: { mode: 'walk', duration: '5m', note: '步行至車站' }
                         },
                         { 
-                            id: generateId(), time: "08:30", type: "transport", title: "前往機場", loc: "Access特快", image: "./access.jpg", note: "直達成田 (約60分)。", 
+                            id: generateId(), time: "08:30", type: "transport", title: "前往機場", loc: "Access特快", image: "access.jpg", note: "直達成田 (約60分)。", 
                             transitToNext: { mode: 'train', duration: '60m', note: '直達特快' }
                         },
                         { 
-                            id: generateId(), time: "10:12", type: "sight", title: "機場最後衝刺", loc: "成田 T2", image: "./naritaT.jpg", tags: ["免稅店"], desc: "購買白色戀人、Royce。",
+                            id: generateId(), time: "10:12", type: "sight", title: "機場最後衝刺", loc: "成田 T2", image: "naritaT.jpg", tags: ["免稅店"], desc: "購買白色戀人、Royce。",
                             subItems: [{id: generateId(), type: 'buy', text: 'Royce 生巧克力', checked: false}, {id: generateId(), type: 'buy', text: 'LeTAO 起司蛋糕', checked: false}, {id: generateId(), type: 'buy', text: '薯條三兄弟', checked: false}],
                             transitToNext: { mode: 'walk', duration: '30m', note: '登機口' }
                         },
                         { 
-                            id: generateId(), time: "13:00", type: "transport", title: "起飛 BR197", loc: "成田機場", image: "./plane.jpg", note: "再見東京！" }
+                            id: generateId(), time: "13:00", type: "transport", title: "起飛 BR197", loc: "成田機場", image: "plane.jpg", note: "再見東京！" }
                         ]
                     }
                 ]
@@ -797,7 +796,7 @@
             const formatMoney = (amount) => { if (currentCurrency === 'JPY') return `¥${Math.round(amount).toLocaleString()}`; return `NT$${Math.round(amount * currencyRate).toLocaleString()}`; };
             return (
                 <div className="px-6 pb-32 tracking-wide pt-6">
-                    <div className="mb-10 text-center"><span className="text-xs text-slate-400 uppercase font-bold tracking-widest">Total Expenses</span><div className="text-4xl font-black mt-2 text-charcoal font-mono">¥{totalSpent.toLocaleString()}</div><div className="text-sm text-slate-500 mt-2 font-medium">≈ NT${Math.round(totalSpent * currencyRate).toLocaleString()}</div></div>
+                    <div className="mb-10 text-center"><span className="text-xs text-slate-400 uppercase font-bold tracking-widest">Total Expenses</span><div className="text-4xl font-black mt-2 text-charcoal font-mono">¥{totalSpent.toLocaleString()}</div><div className="text-sm text-slate-500 mt-2 font-medium">≈ NT${Math.round(totalSpent * currencyRate).toLocaleString()}`;</div></div>
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">Balances</h3><div className="grid grid-cols-3 gap-4 mb-10">{Object.keys(balances).map(m => { const bal = balances[m]; const isPos = bal >= 0; return (<div key={m} className={`rounded-xl p-4 text-center border border-subtle ${isPos ? 'bg-[#f0f4ef]' : 'bg-red-50'}`}><div className="text-xs text-slate-500 font-bold mb-2">{m}</div><div className={`font-bold text-base font-mono ${isPos ? 'text-matcha' : 'text-red-400'}`}>{formatMoney(Math.abs(bal))}</div><div className={`text-[10px] opacity-70 mt-1 font-medium ${isPos ? 'text-matcha' : 'text-red-400'}`}>{isPos ? '收' : '付'}</div></div>); })}</div>
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">History</h3><div className="bg-white rounded-2xl border border-subtle divide-y divide-subtle">{expenses.length === 0 ? (<div className="text-center text-slate-300 py-8 text-sm font-medium">尚無消費紀錄</div>) : ([...expenses].reverse().map((ex) => (<div key={ex.id} className="flex justify-between items-center p-4"><div><div className="font-bold text-charcoal text-base">{ex.title}</div><div className="text-xs text-slate-400 mt-1 font-medium">由 <span className="text-slate-600">{ex.payer}</span> 支付</div></div><div className="text-right"><div className="font-bold text-charcoal font-mono">¥{ex.amount.toLocaleString()}</div><button onClick={() => onDelete(ex.id)} className="text-xs text-slate-300 mt-2 px-2 py-1 hover:text-red-400 transition-colors">刪除</button></div></div>)))}</div>
                 </div>
