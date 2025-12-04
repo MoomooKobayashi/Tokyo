@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -11,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Tokyo Trip">
     
-    <!-- Icon: Force use of Skytree image as requested -->
+    <!-- Icon -->
     <link rel="apple-touch-icon" href="skytree.jpg">
     <link rel="icon" type="image/jpeg" href="skytree.jpg">
     
@@ -21,9 +22,12 @@
     
     <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React UMD (Globals) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -75,9 +79,11 @@
 <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+    "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "sweetalert2": "https://aistudiocdn.com/sweetalert2@^11.26.3"
   }
 }
@@ -86,8 +92,43 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" data-presets="react,typescript">
+    <script type="text/babel" data-type="module">
+        // --- IMPORTS ---
+        // React and ReactDOM are available globally via UMD scripts in <head>
+        // We destructure them here for convenience
         const { useState, useEffect, useRef } = React;
+        
+        // Firebase is imported as a module
+        import { initializeApp } from "firebase/app";
+        import { getDatabase, ref, onValue, set } from "firebase/database";
+
+        // --- FIREBASE CONFIG (請填入您的設定) ---
+        // 請將此處替換為您從 Firebase Console 取得的設定
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "YOUR_DATABASE_URL", 
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        let db;
+        try {
+            // Basic check to prevent init with placeholder config
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                const app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
+            } else {
+                console.warn("Firebase Config尚未設定。請在程式碼中填入您的 firebaseConfig。目前將使用本地模式。");
+            }
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
+
+        const TRIP_DOC_ID = "tokyo_trip_2026_shared_v1";
 
         // --- UTILS ---
         const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -459,7 +500,7 @@
                     imageUrl: "narita.jpg",
                     mealOptions: {
                         breakfast: [
-                            { id: generateId(), name: "飯店早餐", dish: "飯糰", priceLevel: "", url: "", locationUrl: "", note: "" }
+                            { id: generateId(), name: "飯店早餐", dish: "飯糰", priceLevel: "", url: "", locationUrl: "", note: "吃飽再出發" }
                         ],
                         lunch: [
                             { id: generateId(), name: "壽司京辰", dish: "壽司", priceLevel: "¥3000", url: "", locationUrl: "", note: "成田機場管制區內，最後一頓美食" },
@@ -928,7 +969,6 @@
             };
             return (
                 <div className="px-6 pb-32">
-                    {/* Map Toggle */}
                     <div className="pt-2 mb-2">
                         <button onClick={() => setShowMap(!showMap)} className="w-full bg-slate-100 text-slate-500 font-bold py-2 rounded-xl text-xs hover:bg-matcha hover:text-white transition-colors">
                              {showMap ? '收起地圖' : '🗺️ 查看行程總覽地圖'}
@@ -939,7 +979,6 @@
                             </div>
                         )}
                     </div>
-
                     <div className="flex overflow-x-auto gap-5 py-4 hide-scrollbar sticky top-[60px] z-30 bg-rice/95 backdrop-blur -mx-6 px-6 mb-6 transition-all">{days.map((day, idx) => (<button key={idx} onClick={() => handleDayClick(idx)} className={`flex-shrink-0 text-center min-w-[48px] transition-all duration-300 group ${currentDayIdx === idx ? 'text-matcha scale-110' : 'text-slate-400 opacity-70'}`}><div className="text-[10px] font-bold uppercase tracking-widest mb-1">{day.weekday}</div><div className="text-xl font-bold font-mono relative">{day.date.split('/')[1] || day.date}{currentDayIdx === idx && (<div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-matcha"></div>)}</div></button>))}</div>
                     <div className="space-y-12">{days.map((day, dIdx) => (<div id={`day-${dIdx}`} key={dIdx} className="scroll-mt-40 transition-opacity duration-500"><div className="mb-6 px-1"><div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-400 tracking-widest uppercase">{day.date} · {day.weekday}</span><span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md"><i className="fa-solid fa-cloud-sun mr-1"></i>{day.weather}</span></div><h2 className="text-2xl font-bold text-charcoal mt-2 tracking-wide">{day.title}</h2></div><MealOptions mealData={day.mealOptions} onAdd={(type) => onAddMeal(dIdx, type)} onEdit={(type, option) => onEditMeal(dIdx, type, option)} /><div className="relative ml-2.5 pl-8 space-y-0 pb-4"><div className="absolute left-[10px] top-4 bottom-4 w-0.5 bg-slate-100 -z-10"></div>{day.events.map((ev, eIdx) => (<div key={ev.id}><EventCard event={ev} onClick={() => onEventClick(dIdx, ev)} />{eIdx < day.events.length - 1 && (<TransportConnector data={ev.transitToNext} onClick={() => onTransportClick(dIdx, ev.id)} />)}</div>))}<div className="h-8 border-l-2 border-slate-100 ml-[10px]"></div><button onClick={() => onAddEvent(dIdx)} className="w-full py-4 border-2 border-dashed border-subtle rounded-xl text-slate-400 text-sm font-bold hover:border-matcha hover:text-matcha transition-colors">+ 新增行程</button></div></div>))}</div>
                 </div>
@@ -960,22 +999,47 @@
             const [editingMeal, setEditingMeal] = useState(null);
             const [editingReservation, setEditingReservation] = useState(null);
 
+            // --- FIREBASE SYNC (REALTIME DB) ---
             useEffect(() => {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    try {
-                        const parsed = JSON.parse(saved);
-                        if (parsed.days) {
-                            parsed.days.forEach((day) => {
-                                if (!day.mealOptions) day.mealOptions = { breakfast: [], lunch: [], dinner: [] };
-                                day.events.forEach((ev) => { if (!ev.subItems) ev.subItems = []; });
-                            });
-                        }
-                        setData({ ...DEFAULT_DATA, ...parsed });
-                    } catch (e) { console.error("Data load failed", e); }
-                }
+                if (!db) return; // Wait for Firebase to init
+                
+                const tripRef = ref(db, 'trips/' + TRIP_DOC_ID);
+                
+                // Real-time listener
+                const unsubscribe = onValue(tripRef, (snapshot) => {
+                    const cloudData = snapshot.val();
+                    if (cloudData) {
+                        console.log("Synced from cloud!");
+                        setData(cloudData);
+                    } else {
+                        // First time: upload default data to cloud
+                        console.log("No cloud data found, uploading defaults...");
+                        set(tripRef, DEFAULT_DATA);
+                    }
+                }, (error) => {
+                    console.error("Firebase sync error:", error);
+                });
+
+                return () => unsubscribe();
             }, []);
-            useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }, [data]);
+
+            // Helper to save to cloud (replaces localStorage setItem)
+            const saveToCloud = async (newData) => {
+                // Optimistic UI update
+                setData(newData);
+                
+                if (db) {
+                    try {
+                        const tripRef = ref(db, 'trips/' + TRIP_DOC_ID);
+                        await set(tripRef, newData);
+                        console.log("Saved to cloud!");
+                    } catch (e) {
+                        console.error("Cloud save failed:", e);
+                        Swal.fire({ icon: 'error', title: '同步失敗', text: '請檢查網路連線或權限' });
+                    }
+                }
+            };
+
             useEffect(() => {
                 const currentDay = data.days[currentDayIdx];
                 if (currentDay && currentDay.locationKey) {
@@ -997,7 +1061,7 @@
                     newData.days[editingEvent.dayIdx].events.push({ ...eventData, id: generateId() });
                     newData.days[editingEvent.dayIdx].events.sort((a, b) => a.time.localeCompare(b.time));
                 }
-                setData(newData);
+                saveToCloud(newData); // Changed from setData
                 setEditingEvent(null);
                 setDetailEvent(null);
             };
@@ -1007,7 +1071,7 @@
                     if (result.isConfirmed) {
                         const newData = { ...data };
                         newData.days[editingEvent.dayIdx].events = newData.days[editingEvent.dayIdx].events.filter(e => e.id !== editingEvent.eventId);
-                        setData(newData);
+                        saveToCloud(newData); // Changed from setData
                         setEditingEvent(null);
                     }
                 });
@@ -1018,7 +1082,7 @@
                 const dayEvents = newData.days[editingTransport.dayIdx].events;
                 const idx = dayEvents.findIndex(e => e.id === editingTransport.eventId);
                 if (idx >= 0) { dayEvents[idx].transitToNext = transportData; }
-                setData(newData);
+                saveToCloud(newData); // Changed from setData
                 setEditingTransport(null);
             };
             const handleSaveMeal = (mealData) => {
@@ -1026,7 +1090,7 @@
                 const newData = { ...data };
                 const list = newData.days[editingMeal.dayIdx].mealOptions[editingMeal.type];
                 if (editingMeal.option) { const idx = list.findIndex(m => m.id === editingMeal.option.id); if (idx >= 0) list[idx] = mealData; } else { list.push(mealData); }
-                setData(newData);
+                saveToCloud(newData); // Changed from setData
                 setEditingMeal(null);
             };
             const handleDeleteMeal = () => {
@@ -1036,7 +1100,7 @@
                         const newData = { ...data };
                         const list = newData.days[editingMeal.dayIdx].mealOptions[editingMeal.type];
                         newData.days[editingMeal.dayIdx].mealOptions[editingMeal.type] = list.filter(m => m.id !== editingMeal.option.id);
-                        setData(newData);
+                        saveToCloud(newData); // Changed from setData
                         setEditingMeal(null);
                     }
                 });
@@ -1044,16 +1108,16 @@
             const handleSaveReservation = (resData) => {
                 const newData = { ...data };
                 if (editingReservation?.id) { const idx = newData.reservations.findIndex(r => r.id === editingReservation.id); if (idx >= 0) newData.reservations[idx] = { ...newData.reservations[idx], ...resData }; } else { newData.reservations.push({ ...resData, id: generateId() }); }
-                setData(newData);
+                saveToCloud(newData); // Changed from setData
                 setEditingReservation(null);
             };
             const handleDeleteReservation = () => {
                 if (!editingReservation?.id) return;
-                Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonText: '刪除', cancelButtonText: '取消', confirmButtonColor: '#ef4444' }).then((result) => { if (result.isConfirmed) { const newData = { ...data }; newData.reservations = newData.reservations.filter(r => r.id !== editingReservation.id); setData(newData); setEditingReservation(null); } });
+                Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonText: '刪除', cancelButtonText: '取消', confirmButtonColor: '#ef4444' }).then((result) => { if (result.isConfirmed) { const newData = { ...data }; newData.reservations = newData.reservations.filter(r => r.id !== editingReservation.id); saveToCloud(newData); setEditingReservation(null); } });
             };
-            const handleTogglePacking = (id) => { const newData = { ...data }; const item = newData.packingList.find(i => i.id === id); if (item) item.checked = !item.checked; setData(newData); };
-            const handleAddPackingItem = (text, category) => { const newData = { ...data }; newData.packingList.push({ id: generateId(), text, category, checked: false }); setData(newData); };
-            const handleDeletePackingItem = (id) => { const newData = { ...data }; newData.packingList = newData.packingList.filter(i => i.id !== id); setData(newData); };
+            const handleTogglePacking = (id) => { const newData = { ...data }; const item = newData.packingList.find(i => i.id === id); if (item) item.checked = !item.checked; saveToCloud(newData); };
+            const handleAddPackingItem = (text, category) => { const newData = { ...data }; newData.packingList.push({ id: generateId(), text, category, checked: false }); saveToCloud(newData); };
+            const handleDeletePackingItem = (id) => { const newData = { ...data }; newData.packingList = newData.packingList.filter(i => i.id !== id); saveToCloud(newData); };
             const handleAddExpense = async () => {
                 const { value: formValues } = await Swal.fire({
                     title: '<span class="text-charcoal font-bold">新增支出 (JPY)</span>',
@@ -1076,10 +1140,10 @@
                     const [title, amount, payer] = formValues;
                     if (!title || !amount) return;
                     const newExpense = { id: generateId(), title, amount: parseInt(amount), payer, involved: data.members, date: new Date().toISOString() };
-                    setData({ ...data, expenses: [...data.expenses, newExpense] });
+                    saveToCloud({ ...data, expenses: [...data.expenses, newExpense] });
                 }
             };
-            const handleDeleteExpense = (id) => { setData({ ...data, expenses: data.expenses.filter(e => e.id !== id) }); };
+            const handleDeleteExpense = (id) => { saveToCloud({ ...data, expenses: data.expenses.filter(e => e.id !== id) }); };
 
             return (
                 <div className="min-h-screen bg-rice font-sans text-charcoal">
