@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -15,8 +14,8 @@
     <!-- Icon Settings -->
     <link rel="apple-touch-icon" href="skytree.jpg">
     <link rel="icon" type="image/jpeg" href="skytree.jpg">
-    <!-- Android Manifest -->
-    <link rel="manifest" href='data:application/manifest+json,{"short_name":"TokyoTrip","name":"Tokyo Trip 2026","icons":[{"src":"skytree.jpg","sizes":"192x192","type":"image/jpeg","purpose":"any maskable"},{"src":"skytree.jpg","sizes":"512x512","type":"image/jpeg","purpose":"any maskable"}],"start_url":".","display":"standalone","theme_color":"#fcfaf7","background_color":"#fcfaf7"}'>
+    <!-- Link to external manifest.json for reliable Android support -->
+    <link rel="manifest" href="manifest.json">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -101,6 +100,7 @@
         import { initializeApp } from "firebase/app";
         import { getDatabase, ref, onValue, set } from "firebase/database";
 
+        // --- FIREBASE CONFIG (請填入您的設定) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCMuSoz3MhH4Pxtg9hcWV2aIoXk3Rw2Pbs",
             authDomain: "tokyotrip2026-d2ddc.firebaseapp.com",
@@ -126,7 +126,6 @@
         const { useState, useEffect, useRef } = React;
 
         // --- CONSTANTS ---
-        // Incremented version to force data reset if local/remote is outdated
         const DATA_VERSION = 2; 
 
         const MEMBERS = [
@@ -395,7 +394,8 @@
         const MealOptions = ({ mealData, onAdd, onEdit }) => {
             const [isOpen, setIsOpen] = useState(false);
             if (!mealData) return null;
-            const hasData = mealData.breakfast.length > 0 || mealData.lunch.length > 0 || mealData.dinner.length > 0;
+            // Safer check
+            const hasData = (mealData.breakfast?.length > 0) || (mealData.lunch?.length > 0) || (mealData.dinner?.length > 0);
             return (
                 <div className="mb-8 px-1">
                     <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between bg-white border border-orange-100 p-3 rounded-xl shadow-sm mb-4 active:bg-orange-50 transition-colors">
@@ -411,7 +411,8 @@
                                 <div key={type}>
                                     <div className="flex items-center justify-between mb-2 pr-2"><h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{type === 'breakfast' ? '早餐' : type === 'lunch' ? '午餐' : '晚餐'}</h5></div>
                                     <div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar snap-x min-h-[100px]">
-                                        {mealData[type].map(m => (
+                                        {/* SAFE ACCESS with ?.map */}
+                                        {mealData[type]?.map(m => (
                                             <div key={m.id} onClick={() => onEdit(type, m)} className="min-w-[220px] bg-white rounded-xl p-3 border border-subtle shadow-sm flex flex-col snap-start active:scale-95 transition-transform cursor-pointer relative group">
                                                 <div className="absolute top-2 right-2 text-slate-300 group-hover:text-matcha transition-colors"><i className="fa-solid fa-pen-to-square text-xs"></i></div>
                                                 <div className="flex justify-between items-start mb-2 pr-4"><h4 className="font-bold text-charcoal text-sm line-clamp-1">{m.name}</h4><span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{m.priceLevel}</span></div>
@@ -716,7 +717,7 @@
                             <div><label className="text-xs font-bold text-slate-400 block mb-2">誰先付錢?</label><div className="flex gap-3 overflow-x-auto pb-2">{members.map(m => (<div key={m.id} onClick={() => setData({...data, payer: m.id})} className={`flex flex-col items-center gap-1 min-w-[50px] cursor-pointer transition-all ${data.payer === m.id ? 'opacity-100 scale-110' : 'opacity-50 grayscale'}`}><span className="text-2xl">{m.icon}</span><span className="text-[10px] font-bold">{m.name}</span></div>))}</div></div>
                             <div className="bg-white p-3 rounded-xl border border-subtle">
                                 <div className="flex justify-between items-center mb-2"><label className="text-xs font-bold text-slate-400">分攤方式</label><div className="flex bg-slate-100 rounded-lg p-1"><button onClick={() => setData({...data, mode: 'equal'})} className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${data.mode==='equal'?'bg-white shadow-sm text-matcha':'text-slate-400'}`}>平均</button><button onClick={() => setData({...data, mode: 'custom'})} className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${data.mode==='custom'?'bg-white shadow-sm text-matcha':'text-slate-400'}`}>自訂</button></div></div>
-                                {data.mode === 'equal' ? (<div className="flex flex-wrap gap-2">{members.map(m => (<div key={m.id} onClick={() => { const newInvolved = data.involved.includes(m.id) ? data.involved.filter(id => id !== m.id) : [...data.involved, m.id]; setData({...data, involved: newInvolved}); }} className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-colors ${data.involved.includes(m.id) ? 'bg-matcha text-white border-matcha' : 'bg-white text-slate-400 border-subtle'}`}>{m.icon} {m.name}</div>))}</div>) : (<div className="space-y-2">{members.map(m => (<div key={m.id} className="flex items-center gap-2"><div className="w-8 text-xl text-center">{m.icon}</div><input type="number" placeholder="0" value={data.details[m.id] || ''} onChange={(e) => { const val = parseFloat(e.target.value) || 0; const newDetails = {...data.details, [m.id]: val}; const newInvolved = Object.keys(newDetails).filter(k => newDetails[k] > 0); setData({...data, details: newDetails, involved: newInvolved}); }} className="flex-1 bg-slate-50 border-b border-subtle py-1 px-2 text-sm font-mono outline-none focus:border-matcha" /></div>))}<div className={`text-right text-xs font-bold mt-2 ${remaining === 0 ? 'text-matcha' : 'text-red-400'}`}>{remaining === 0 ? '金額正確' : `還有 ${remaining} 未分配`}</div></div>)}
+                                {data.mode === 'equal' ? (<div className="flex flex-wrap gap-2">{members.map(m => (<div key={m.id} onClick={() => { const newInvolved = data.involved.includes(m.id) ? data.involved.filter(id => id !== m.id) : [...data.involved, m.id]; setData({...data, involved: newInvolved}); }} className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-colors ${data.involved.includes(m.id) ? 'bg-matcha text-white border-matcha' : 'bg-white text-slate-500 border-subtle'}`}>{m.icon} {m.name}</div>))}</div>) : (<div className="space-y-2">{members.map(m => (<div key={m.id} className="flex items-center gap-2"><div className="w-8 text-xl text-center">{m.icon}</div><input type="number" placeholder="0" value={data.details[m.id] || ''} onChange={(e) => { const val = parseFloat(e.target.value) || 0; const newDetails = {...data.details, [m.id]: val}; const newInvolved = Object.keys(newDetails).filter(k => newDetails[k] > 0); setData({...data, details: newDetails, involved: newInvolved}); }} className="flex-1 bg-slate-50 border-b border-subtle py-1 px-2 text-sm font-mono outline-none focus:border-matcha" /></div>))}<div className={`text-right text-xs font-bold mt-2 ${remaining === 0 ? 'text-matcha' : 'text-red-400'}`}>{remaining === 0 ? '金額正確' : `還有 ${remaining} 未分配`}</div></div>)}
                             </div>
                             <button onClick={() => { if(!data.title || !data.amount || data.involved.length === 0 || !isCustomValid) return; onSave(data); }} disabled={!isCustomValid} className={`w-full text-white font-bold py-3.5 rounded-2xl shadow-lg mt-2 transition-opacity ${isCustomValid ? 'bg-matcha' : 'bg-slate-300'}`}>儲存</button>
                         </div>
@@ -877,6 +878,11 @@
                         if(safeData.days) {
                             safeData.days.forEach(d => {
                                 if (!d.mealOptions) d.mealOptions = { breakfast: [], lunch: [], dinner: [] };
+                                // Ensure all meal arrays exist to prevent crashes
+                                if (!d.mealOptions.breakfast) d.mealOptions.breakfast = [];
+                                if (!d.mealOptions.lunch) d.mealOptions.lunch = [];
+                                if (!d.mealOptions.dinner) d.mealOptions.dinner = [];
+                                
                                 if (!d.events) d.events = [];
                                 d.events.forEach(e => { if (!e.subItems) e.subItems = []; });
                             });
