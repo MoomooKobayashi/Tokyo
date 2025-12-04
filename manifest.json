@@ -1,0 +1,22 @@
+{
+  "short_name": "東京七日",
+  "name": "東京七日行 2026",
+  "icons": [
+    {
+      "src": "skytree.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "skytree.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#fcfaf7",
+  "background_color": "#fcfaf7"
+}
