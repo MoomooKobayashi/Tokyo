@@ -11,9 +11,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Tokyo Trip">
     
-    <!-- Icon: Local Icons -->
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
+    <!-- Icon: Force use of Skytree image as requested -->
+    <link rel="apple-touch-icon" href="skytree.jpg">
+    <link rel="icon" type="image/jpeg" href="skytree.jpg">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -100,6 +100,30 @@
             kawagoe: { lat: 35.9251, lon: 139.4858, name: '川越' },
             nikko: { lat: 36.7199, lon: 139.6982, name: '日光' }
         };
+
+        const JAPANESE_PHRASES = [
+            { category: '基本', list: [
+                { ja: 'こんにちは', romaji: 'Konnichiwa', zh: '你好' },
+                { ja: 'ありがとう', romaji: 'Arigatou', zh: '謝謝' },
+                { ja: 'すみません', romaji: 'Sumimasen', zh: '不好意思/請問' },
+                { ja: 'はい / いいえ', romaji: 'Hai / Iie', zh: '是 / 不是' }
+            ]},
+            { category: '餐廳', list: [
+                { ja: 'これをお願いします', romaji: 'Kore o onegaishimasu', zh: '我要這個' },
+                { ja: 'お水ください', romaji: 'Omizu kudasai', zh: '請給我水' },
+                { ja: 'お会計お願いします', romaji: 'Okaikei onegaishimasu', zh: '請結帳' },
+                { ja: '美味しいです', romaji: 'Oishii desu', zh: '很好吃' }
+            ]},
+            { category: '購物', list: [
+                { ja: 'いくらですか', romaji: 'Ikura desu ka', zh: '多少錢？' },
+                { ja: '免税できますか', romaji: 'Menzei dekimasu ka', zh: '可以退稅嗎？' },
+                { ja: '袋はいりません', romaji: 'Fukuro wa irimasen', zh: '不用袋子' }
+            ]},
+            { category: '交通', list: [
+                { ja: '駅はどこですか', romaji: 'Eki wa doko desu ka', zh: '車站在哪裡？' },
+                { ja: 'この電車は...に行きますか', romaji: 'Kono densha wa... ni ikimasu ka', zh: '這班車去...嗎？' }
+            ]}
+        ];
 
         const INITIAL_PACKING_LIST = [
             { id: generateId(), category: '證件/錢包', text: '護照 (效期6個月以上)', checked: false },
@@ -493,6 +517,78 @@
 
         // --- COMPONENTS ---
 
+        const CurrencyConverter = ({ rate }) => {
+            const [amount, setAmount] = useState('');
+            const [isJpyToTwd, setIsJpyToTwd] = useState(true);
+            
+            const converted = amount ? (isJpyToTwd ? Math.round(parseFloat(amount) * rate) : Math.round(parseFloat(amount) / rate)) : 0;
+            
+            return (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-subtle mb-6">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">匯率換算 (1 JPY ≈ {rate} TWD)</h3>
+                    <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                            <label className="text-[10px] text-slate-400 font-bold block mb-1">{isJpyToTwd ? 'JPY' : 'TWD'}</label>
+                            <input 
+                                type="number" 
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                className="w-full bg-rice border border-subtle rounded-lg px-3 py-2 text-lg font-mono font-bold focus:border-matcha outline-none"
+                                placeholder="0"
+                            />
+                        </div>
+                        <button 
+                            onClick={() => setIsJpyToTwd(!isJpyToTwd)}
+                            className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-matcha flex items-center justify-center mt-4 active:scale-95 transition-transform"
+                        >
+                            <i className="fa-solid fa-arrow-right-arrow-left text-xs"></i>
+                        </button>
+                        <div className="flex-1">
+                            <label className="text-[10px] text-slate-400 font-bold block mb-1">{isJpyToTwd ? 'TWD' : 'JPY'}</label>
+                            <div className="w-full bg-slate-50 border border-transparent rounded-lg px-3 py-2 text-lg font-mono font-bold text-charcoal">
+                                {converted.toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const JapanesePhrasebook = () => {
+            const speak = (text) => {
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'ja-JP';
+                window.speechSynthesis.speak(u);
+            };
+
+            return (
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-subtle mt-6">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">旅遊實用日語</h3>
+                    <div className="space-y-6">
+                        {JAPANESE_PHRASES.map(cat => (
+                            <div key={cat.category}>
+                                <h4 className="text-xs font-bold text-matcha mb-2">{cat.category}</h4>
+                                <div className="space-y-2">
+                                    {cat.list.map((p, idx) => (
+                                        <div key={idx} onClick={() => speak(p.ja)} className="flex justify-between items-center bg-rice p-3 rounded-xl active:scale-95 transition-transform cursor-pointer group">
+                                            <div>
+                                                <div className="font-bold text-charcoal text-sm">{p.ja}</div>
+                                                <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.romaji}</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-medium text-slate-500">{p.zh}</div>
+                                                <i className="fa-solid fa-volume-high text-slate-300 text-xs mt-1 group-hover:text-matcha transition-colors"></i>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         const EventCard = ({ event, onClick }) => {
             const typeColors = {
                 transport: 'text-blue-400',
@@ -534,8 +630,7 @@
                                 loading="lazy" 
                                 alt=""
                                 onError={(e) => { 
-                                    // Fallback if local image fails
-                                    e.target.src = 'https://placehold.co/100x100/eceae6/a0a09e?text=No+Img';
+                                    e.target.style.display = 'none';
                                 }}
                             />
                         )}
@@ -674,6 +769,10 @@
                             </div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">標題</label><input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="請輸入標題" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">地點</label><input type="text" value={formData.loc} onChange={(e) => setFormData({...formData, loc: e.target.value})} placeholder="例如：淺草" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            
+                            {/* New: Edit Image */}
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">圖片檔名/網址</label><input type="text" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="例如：asakusa.jpg" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            
                             <div className="bg-white p-4 rounded-xl border border-subtle"><label className="text-xs uppercase font-bold text-slate-400 block mb-3">子項目 (必吃/必買)</label><div className="flex gap-2 mb-3"><select value={newSubType} onChange={(e) => setNewSubType(e.target.value)} className="bg-slate-100 rounded-lg text-xs p-2 outline-none"><option value="buy">🛍️</option><option value="eat">🍴</option><option value="do">✨</option></select><input type="text" value={newSubText} onChange={(e) => setNewSubText(e.target.value)} placeholder="新增子項目..." className="flex-1 bg-slate-50 border-b border-subtle px-2 text-sm focus:border-matcha outline-none" /><button onClick={handleAddSubItem} type="button" className="text-matcha font-bold px-2">+</button></div><div className="space-y-2">{formData.subItems?.map(item => (<div key={item.id} className="flex justify-between items-center text-sm bg-slate-50 p-2 rounded"><span>{item.type === 'buy' ? '🛍️' : item.type === 'eat' ? '🍴' : '✨'} {item.text}</span><button type="button" onClick={() => removeSubItem(item.id)} className="text-red-400"><i className="fa-solid fa-xmark"></i></button></div>))}</div></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">筆記</label><textarea value={formData.desc || ''} onChange={(e) => setFormData({...formData, desc: e.target.value})} rows={3} placeholder="寫點什麼..." className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none"></textarea></div>
                         </div>
@@ -745,6 +844,7 @@
                     <div className="grid grid-cols-2 gap-4"><a href="https://vjw-lp.digital.go.jp/zh-hant/" target="_blank" rel="noreferrer" className="bg-blue-50 p-4 rounded-2xl flex flex-col items-center justify-center text-center active:scale-95 transition-transform border border-blue-100"><i className="fa-solid fa-qrcode text-2xl text-blue-500 mb-2"></i><span className="text-xs font-bold text-blue-900">Visit Japan Web</span></a><a href="https://www.google.com/maps" target="_blank" rel="noreferrer" className="bg-green-50 p-4 rounded-2xl flex flex-col items-center justify-center text-center active:scale-95 transition-transform border border-green-100"><i className="fa-solid fa-map-location-dot text-2xl text-green-600 mb-2"></i><span className="text-xs font-bold text-green-900">Google Maps</span></a></div>
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-subtle"><h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">緊急聯絡</h3><div className="space-y-4"><div className="flex justify-between items-center border-b border-slate-50 pb-3"><div><div className="font-bold text-charcoal">旅外國人急難救助</div><div className="text-xs text-slate-400 mt-1">日本境內直撥</div></div><a href="tel:08010097179" className="text-red-500 font-mono font-bold text-lg">080-1009-7179</a></div><div className="flex justify-between items-center"><div className="flex gap-4"><div><span className="text-xs text-slate-400 block">報警</span><span className="font-bold text-xl">110</span></div><div><span className="text-xs text-slate-400 block">救護</span><span className="font-bold text-xl">119</span></div></div></div></div></div>
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-subtle"><div className="flex justify-between items-center mb-4"><h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">預訂與票券</h3><button onClick={onAdd} className="text-xs bg-[#f4f1e8] text-matcha px-3 py-1 rounded-full font-bold hover:bg-subtle transition-colors"><i className="fa-solid fa-plus mr-1"></i>新增</button></div><div className="space-y-6">{reservations.map(res => (<div key={res.id} onClick={() => onEdit(res)} className="relative pl-4 border-l-2 border-slate-100 cursor-pointer active:opacity-70 transition-opacity group"><div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-slate-200 group-hover:bg-matcha transition-colors"></div><div className="flex justify-between items-start mb-1"><span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><i className={`fa-solid ${getTypeIcon(res.type)} text-[10px]`}></i> {res.type}</span><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getStatusColor(res.status)}`}>{getStatusText(res.status)}</span></div><div className="text-base font-bold text-charcoal">{res.name}</div><div className="text-sm text-slate-500 mt-1 font-mono">{res.dateTime}</div>{res.refNumber && <div className="text-xs font-mono text-slate-400 mt-1">REF: {res.refNumber}</div>}{res.notes && <div className="text-xs text-matcha mt-1 bg-matcha/5 p-2 rounded">{res.notes}</div>}</div>))}{reservations.length === 0 && <div className="text-center text-slate-300 text-sm py-2">尚無預訂紀錄</div>}</div></div>
+                    <JapanesePhrasebook />
                 </div>
             );
         };
@@ -796,6 +896,7 @@
             const formatMoney = (amount) => { if (currentCurrency === 'JPY') return `¥${Math.round(amount).toLocaleString()}`; return `NT$${Math.round(amount * currencyRate).toLocaleString()}`; };
             return (
                 <div className="px-6 pb-32 tracking-wide pt-6">
+                    <CurrencyConverter rate={currencyRate} />
                     <div className="mb-10 text-center"><span className="text-xs text-slate-400 uppercase font-bold tracking-widest">Total Expenses</span><div className="text-4xl font-black mt-2 text-charcoal font-mono">¥{totalSpent.toLocaleString()}</div><div className="text-sm text-slate-500 mt-2 font-medium">≈ NT${Math.round(totalSpent * currencyRate).toLocaleString()}`;</div></div>
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">Balances</h3><div className="grid grid-cols-3 gap-4 mb-10">{Object.keys(balances).map(m => { const bal = balances[m]; const isPos = bal >= 0; return (<div key={m} className={`rounded-xl p-4 text-center border border-subtle ${isPos ? 'bg-[#f0f4ef]' : 'bg-red-50'}`}><div className="text-xs text-slate-500 font-bold mb-2">{m}</div><div className={`font-bold text-base font-mono ${isPos ? 'text-matcha' : 'text-red-400'}`}>{formatMoney(Math.abs(bal))}</div><div className={`text-[10px] opacity-70 mt-1 font-medium ${isPos ? 'text-matcha' : 'text-red-400'}`}>{isPos ? '收' : '付'}</div></div>); })}</div>
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">History</h3><div className="bg-white rounded-2xl border border-subtle divide-y divide-subtle">{expenses.length === 0 ? (<div className="text-center text-slate-300 py-8 text-sm font-medium">尚無消費紀錄</div>) : ([...expenses].reverse().map((ex) => (<div key={ex.id} className="flex justify-between items-center p-4"><div><div className="font-bold text-charcoal text-base">{ex.title}</div><div className="text-xs text-slate-400 mt-1 font-medium">由 <span className="text-slate-600">{ex.payer}</span> 支付</div></div><div className="text-right"><div className="font-bold text-charcoal font-mono">¥{ex.amount.toLocaleString()}</div><button onClick={() => onDelete(ex.id)} className="text-xs text-slate-300 mt-2 px-2 py-1 hover:text-red-400 transition-colors">刪除</button></div></div>)))}</div>
@@ -805,6 +906,7 @@
 
         const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal }) => {
             const isManualScroll = useRef(false);
+            const [showMap, setShowMap] = useState(false);
             useEffect(() => {
                 const observer = new IntersectionObserver((entries) => {
                     if (isManualScroll.current) return;
@@ -826,6 +928,18 @@
             };
             return (
                 <div className="px-6 pb-32">
+                    {/* Map Toggle */}
+                    <div className="pt-2 mb-2">
+                        <button onClick={() => setShowMap(!showMap)} className="w-full bg-slate-100 text-slate-500 font-bold py-2 rounded-xl text-xs hover:bg-matcha hover:text-white transition-colors">
+                             {showMap ? '收起地圖' : '🗺️ 查看行程總覽地圖'}
+                        </button>
+                        {showMap && (
+                            <div className="mt-4 rounded-xl overflow-hidden shadow-lg border border-subtle animate-fade-in">
+                                <img src="map.png" alt="行程地圖" className="w-full h-auto" onError={(e) => e.target.style.display='none'} />
+                            </div>
+                        )}
+                    </div>
+
                     <div className="flex overflow-x-auto gap-5 py-4 hide-scrollbar sticky top-[60px] z-30 bg-rice/95 backdrop-blur -mx-6 px-6 mb-6 transition-all">{days.map((day, idx) => (<button key={idx} onClick={() => handleDayClick(idx)} className={`flex-shrink-0 text-center min-w-[48px] transition-all duration-300 group ${currentDayIdx === idx ? 'text-matcha scale-110' : 'text-slate-400 opacity-70'}`}><div className="text-[10px] font-bold uppercase tracking-widest mb-1">{day.weekday}</div><div className="text-xl font-bold font-mono relative">{day.date.split('/')[1] || day.date}{currentDayIdx === idx && (<div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-matcha"></div>)}</div></button>))}</div>
                     <div className="space-y-12">{days.map((day, dIdx) => (<div id={`day-${dIdx}`} key={dIdx} className="scroll-mt-40 transition-opacity duration-500"><div className="mb-6 px-1"><div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-400 tracking-widest uppercase">{day.date} · {day.weekday}</span><span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md"><i className="fa-solid fa-cloud-sun mr-1"></i>{day.weather}</span></div><h2 className="text-2xl font-bold text-charcoal mt-2 tracking-wide">{day.title}</h2></div><MealOptions mealData={day.mealOptions} onAdd={(type) => onAddMeal(dIdx, type)} onEdit={(type, option) => onEditMeal(dIdx, type, option)} /><div className="relative ml-2.5 pl-8 space-y-0 pb-4"><div className="absolute left-[10px] top-4 bottom-4 w-0.5 bg-slate-100 -z-10"></div>{day.events.map((ev, eIdx) => (<div key={ev.id}><EventCard event={ev} onClick={() => onEventClick(dIdx, ev)} />{eIdx < day.events.length - 1 && (<TransportConnector data={ev.transitToNext} onClick={() => onTransportClick(dIdx, ev.id)} />)}</div>))}<div className="h-8 border-l-2 border-slate-100 ml-[10px]"></div><button onClick={() => onAddEvent(dIdx)} className="w-full py-4 border-2 border-dashed border-subtle rounded-xl text-slate-400 text-sm font-bold hover:border-matcha hover:text-matcha transition-colors">+ 新增行程</button></div></div>))}</div>
                 </div>
