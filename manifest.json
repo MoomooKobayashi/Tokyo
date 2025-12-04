@@ -3,13 +3,13 @@
   "name": "東京七日行 2026",
   "icons": [
     {
-      "src": "tokyo_cover.jpg",
+      "src": "https://res.klook.com/image/upload/fl_lossy.progressive,q_60/Mobile/City/lgra7vcg7b2g3zcts3sl.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "tokyo_cover.jpg",
+      "src": "https://res.klook.com/image/upload/fl_lossy.progressive,q_60/Mobile/City/lgra7vcg7b2g3zcts3sl.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any maskable"

@@ -11,11 +11,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Tokyo Trip">
     
-    <!-- Icon Settings -->
-    <!-- 請務必將 Klook 圖片下載並命名為 tokyo_cover.jpg 上傳到 GitHub -->
-    <link rel="apple-touch-icon" href="tokyo_cover.jpg?v=3">
-    <link rel="icon" type="image/jpeg" href="tokyo_cover.jpg?v=3">
-    <link rel="manifest" href="manifest.json?v=3">
+    <!-- Icon Settings (Updated to Klook Image) -->
+    <link rel="apple-touch-icon" href="https://res.klook.com/image/upload/fl_lossy.progressive,q_60/Mobile/City/lgra7vcg7b2g3zcts3sl.jpg">
+    <link rel="icon" type="image/jpeg" href="https://res.klook.com/image/upload/fl_lossy.progressive,q_60/Mobile/City/lgra7vcg7b2g3zcts3sl.jpg">
+    <link rel="manifest" href="manifest.json?v=4">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -23,12 +22,9 @@
     
     <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React UMD -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -78,7 +74,7 @@
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
     
-    <!-- Import Map for Firebase (ES Modules) -->
+    <!-- Import Map for Firebase -->
     <script type="importmap">
 {
   "imports": {
@@ -95,12 +91,12 @@
 <body>
     <div id="root"></div>
 
-    <!-- 1. Firebase Logic (Module) -->
+    <!-- 1. Firebase Logic -->
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getDatabase, ref, onValue, set } from "firebase/database";
 
-        // --- FIREBASE CONFIG (請填入您的設定) ---
+        // --- FIREBASE CONFIG (您的設定) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCMuSoz3MhH4Pxtg9hcWV2aIoXk3Rw2Pbs",
             authDomain: "tokyotrip2026-d2ddc.firebaseapp.com",
@@ -120,12 +116,11 @@
         window.dbSet = set;
         window.dbOnValue = onValue;
         
-        // Signal that Firebase is ready
         window.firebaseInitialized = true;
         window.dispatchEvent(new CustomEvent('firebase-ready'));
     </script>
 
-    <!-- 2. React Application (Babel) -->
+    <!-- 2. React Application -->
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useRef } = React;
 
@@ -485,6 +480,32 @@
             );
         };
 
+        const ReservationModal = ({ isOpen, initialData, onClose, onSave, onDelete }) => {
+            const [formData, setFormData] = useState({ type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' });
+            useEffect(() => { if (isOpen) setFormData(initialData || { type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' }); }, [isOpen, initialData]);
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[70]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-8 pb-safe shadow-2xl transform transition-transform duration-300 max-h-[90vh] flex flex-col overflow-y-auto animate-slide-up">
+                        <div className="w-10 h-1 bg-slate-200/70 rounded-full mx-auto mb-8 flex-shrink-0"></div>
+                        <h3 className="text-xl font-bold text-charcoal mb-6">{initialData ? '編輯預訂' : '新增預訂'}</h3>
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">類型</label><select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none"><option value="flight">✈️ 航班</option><option value="hotel">🏨 住宿</option><option value="restaurant">🍽️ 餐廳</option><option value="ticket">🎫 票券</option></select></div>
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">狀態</label><select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none"><option value="booked">✅ 已預訂</option><option value="pending">⏳ 處理中</option><option value="to-book">⚠️ 待預訂</option></select></div>
+                            </div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">名稱</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="例如：Skyliner 車票" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">時間</label><input type="text" value={formData.dateTime} onChange={(e) => setFormData({...formData, dateTime: e.target.value})} placeholder="例如：1/28 14:00" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">編號</label><input type="text" value={formData.refNumber || ''} onChange={(e) => setFormData({...formData, refNumber: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base font-mono focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">備註</label><textarea value={formData.notes || ''} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none" /></div>
+                        </div>
+                        <div className="mt-8 flex gap-4">{initialData && onDelete && <button onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle">刪除</button>}<button onClick={() => onSave(formData)} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl shadow-lg">儲存</button></div>
+                    </div>
+                </div>
+            );
+        };
+
         const PackingListView = ({ items, onToggle, onAdd, onDelete }) => {
             const [newItemText, setNewItemText] = useState('');
             const safeItems = items || [];
@@ -591,6 +612,33 @@
             );
         };
 
+        const ExpenseModal = ({ isOpen, onClose, onSave, members }) => {
+            const [data, setData] = useState({ title: '', amount: '', currency: 'JPY', payer: members[0].id, involved: members.map(m => m.id), mode: 'equal', details: {} });
+            useEffect(() => { if(data.mode === 'equal') { const eq = {}; data.involved.forEach(id => eq[id] = 0); setData(d => ({...d, details: eq})); } }, [data.involved.length]);
+            if (!isOpen) return null;
+            const totalAllocated = Object.values(data.details).reduce((a, b) => Number(a) + Number(b), 0);
+            const remaining = Number(data.amount) - totalAllocated;
+            const isCustomValid = data.mode === 'equal' || Math.abs(remaining) < 1;
+            return (
+                 <div className="fixed inset-0 z-[80]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-6 pb-safe shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-lg font-bold text-charcoal mb-4">新增支出</h3>
+                        <div className="space-y-4">
+                            <input type="text" value={data.title} onChange={e => setData({...data, title: e.target.value})} placeholder="項目 (如: 晚餐)" className="w-full bg-white p-3 rounded-xl border border-subtle outline-none" />
+                            <div className="flex gap-2"><input type="number" value={data.amount} onChange={e => setData({...data, amount: e.target.value})} placeholder="總金額" className="flex-[2] bg-white p-3 rounded-xl border border-subtle outline-none font-mono text-lg font-bold" /><select value={data.currency} onChange={e => setData({...data, currency: e.target.value})} className="flex-1 bg-white p-3 rounded-xl border border-subtle outline-none font-bold text-center"><option value="JPY">JPY</option><option value="TWD">TWD</option></select></div>
+                            <div><label className="text-xs font-bold text-slate-400 block mb-2">誰先付錢?</label><div className="flex gap-3 overflow-x-auto pb-2">{members.map(m => (<div key={m.id} onClick={() => setData({...data, payer: m.id})} className={`flex flex-col items-center gap-1 min-w-[50px] cursor-pointer transition-all ${data.payer === m.id ? 'opacity-100 scale-110' : 'opacity-50 grayscale'}`}><span className="text-2xl">{m.icon}</span><span className="text-[10px] font-bold">{m.name}</span></div>))}</div></div>
+                            <div className="bg-white p-3 rounded-xl border border-subtle">
+                                <div className="flex justify-between items-center mb-2"><label className="text-xs font-bold text-slate-400">分攤方式</label><div className="flex bg-slate-100 rounded-lg p-1"><button onClick={() => setData({...data, mode: 'equal'})} className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${data.mode==='equal'?'bg-white shadow-sm text-matcha':'text-slate-400'}`}>平均</button><button onClick={() => setData({...data, mode: 'custom'})} className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${data.mode==='custom'?'bg-white shadow-sm text-matcha':'text-slate-400'}`}>自訂</button></div></div>
+                                {data.mode === 'equal' ? (<div className="flex flex-wrap gap-2">{members.map(m => (<div key={m.id} onClick={() => { const newInvolved = data.involved.includes(m.id) ? data.involved.filter(id => id !== m.id) : [...data.involved, m.id]; setData({...data, involved: newInvolved}); }} className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-colors ${data.involved.includes(m.id) ? 'bg-matcha text-white border-matcha' : 'bg-white text-slate-500 border-subtle'}`}>{m.icon} {m.name}</div>))}</div>) : (<div className="space-y-2">{members.map(m => (<div key={m.id} className="flex items-center gap-2"><div className="w-8 text-xl text-center">{m.icon}</div><input type="number" placeholder="0" value={data.details[m.id] || ''} onChange={(e) => { const val = parseFloat(e.target.value) || 0; const newDetails = {...data.details, [m.id]: val}; const newInvolved = Object.keys(newDetails).filter(k => newDetails[k] > 0); setData({...data, details: newDetails, involved: newInvolved}); }} className="flex-1 bg-slate-50 border-b border-subtle py-1 px-2 text-sm font-mono outline-none focus:border-matcha" /></div>))}<div className={`text-right text-xs font-bold mt-2 ${remaining === 0 ? 'text-matcha' : 'text-red-400'}`}>{remaining === 0 ? '金額正確' : `還有 ${remaining} 未分配`}</div></div>)}
+                            </div>
+                            <button onClick={() => { if(!data.title || !data.amount || data.involved.length === 0 || !isCustomValid) return; onSave(data); }} disabled={!isCustomValid} className={`w-full text-white font-bold py-3.5 rounded-2xl shadow-lg mt-2 transition-opacity ${isCustomValid ? 'bg-matcha' : 'bg-slate-300'}`}>儲存</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal }) => {
             const isManualScroll = useRef(false);
             const [mapOpen, setMapOpen] = useState(false);
@@ -658,33 +706,6 @@
                                 </div>
                             </div>
                         ))}
-                    </div>
-                </div>
-            );
-        };
-
-        const ExpenseModal = ({ isOpen, onClose, onSave, members }) => {
-            const [data, setData] = useState({ title: '', amount: '', currency: 'JPY', payer: members[0].id, involved: members.map(m => m.id), mode: 'equal', details: {} });
-            useEffect(() => { if(data.mode === 'equal') { const eq = {}; data.involved.forEach(id => eq[id] = 0); setData(d => ({...d, details: eq})); } }, [data.involved.length]);
-            if (!isOpen) return null;
-            const totalAllocated = Object.values(data.details).reduce((a, b) => Number(a) + Number(b), 0);
-            const remaining = Number(data.amount) - totalAllocated;
-            const isCustomValid = data.mode === 'equal' || Math.abs(remaining) < 1;
-            return (
-                 <div className="fixed inset-0 z-[80]">
-                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
-                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-6 pb-safe shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-lg font-bold text-charcoal mb-4">新增支出</h3>
-                        <div className="space-y-4">
-                            <input type="text" value={data.title} onChange={e => setData({...data, title: e.target.value})} placeholder="項目 (如: 晚餐)" className="w-full bg-white p-3 rounded-xl border border-subtle outline-none" />
-                            <div className="flex gap-2"><input type="number" value={data.amount} onChange={e => setData({...data, amount: e.target.value})} placeholder="總金額" className="flex-[2] bg-white p-3 rounded-xl border border-subtle outline-none font-mono text-lg font-bold" /><select value={data.currency} onChange={e => setData({...data, currency: e.target.value})} className="flex-1 bg-white p-3 rounded-xl border border-subtle outline-none font-bold text-center"><option value="JPY">JPY</option><option value="TWD">TWD</option></select></div>
-                            <div><label className="text-xs font-bold text-slate-400 block mb-2">誰先付錢?</label><div className="flex gap-3 overflow-x-auto pb-2">{members.map(m => (<div key={m.id} onClick={() => setData({...data, payer: m.id})} className={`flex flex-col items-center gap-1 min-w-[50px] cursor-pointer transition-all ${data.payer === m.id ? 'opacity-100 scale-110' : 'opacity-50 grayscale'}`}><span className="text-2xl">{m.icon}</span><span className="text-[10px] font-bold">{m.name}</span></div>))}</div></div>
-                            <div className="bg-white p-3 rounded-xl border border-subtle">
-                                <div className="flex justify-between items-center mb-2"><label className="text-xs font-bold text-slate-400">分攤方式</label><div className="flex bg-slate-100 rounded-lg p-1"><button onClick={() => setData({...data, mode: 'equal'})} className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${data.mode==='equal'?'bg-white shadow-sm text-matcha':'text-slate-400'}`}>平均</button><button onClick={() => setData({...data, mode: 'custom'})} className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${data.mode==='custom'?'bg-white shadow-sm text-matcha':'text-slate-400'}`}>自訂</button></div></div>
-                                {data.mode === 'equal' ? (<div className="flex flex-wrap gap-2">{members.map(m => (<div key={m.id} onClick={() => { const newInvolved = data.involved.includes(m.id) ? data.involved.filter(id => id !== m.id) : [...data.involved, m.id]; setData({...data, involved: newInvolved}); }} className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-colors ${data.involved.includes(m.id) ? 'bg-matcha text-white border-matcha' : 'bg-white text-slate-500 border-subtle'}`}>{m.icon} {m.name}</div>))}</div>) : (<div className="space-y-2">{members.map(m => (<div key={m.id} className="flex items-center gap-2"><div className="w-8 text-xl text-center">{m.icon}</div><input type="number" placeholder="0" value={data.details[m.id] || ''} onChange={(e) => { const val = parseFloat(e.target.value) || 0; const newDetails = {...data.details, [m.id]: val}; const newInvolved = Object.keys(newDetails).filter(k => newDetails[k] > 0); setData({...data, details: newDetails, involved: newInvolved}); }} className="flex-1 bg-slate-50 border-b border-subtle py-1 px-2 text-sm font-mono outline-none focus:border-matcha" /></div>))}<div className={`text-right text-xs font-bold mt-2 ${remaining === 0 ? 'text-matcha' : 'text-red-400'}`}>{remaining === 0 ? '金額正確' : `還有 ${remaining} 未分配`}</div></div>)}
-                            </div>
-                            <button onClick={() => { if(!data.title || !data.amount || data.involved.length === 0 || !isCustomValid) return; onSave(data); }} disabled={!isCustomValid} className={`w-full text-white font-bold py-3.5 rounded-2xl shadow-lg mt-2 transition-opacity ${isCustomValid ? 'bg-matcha' : 'bg-slate-300'}`}>儲存</button>
-                        </div>
                     </div>
                 </div>
             );
@@ -768,32 +789,6 @@
             );
         };
 
-        const ReservationModal = ({ isOpen, initialData, onClose, onSave, onDelete }) => {
-            const [formData, setFormData] = useState({ type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' });
-            useEffect(() => { if (isOpen) setFormData(initialData || { type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' }); }, [isOpen, initialData]);
-            if (!isOpen) return null;
-            return (
-                <div className="fixed inset-0 z-[70]">
-                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
-                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-8 pb-safe shadow-2xl transform transition-transform duration-300 max-h-[90vh] flex flex-col overflow-y-auto animate-slide-up">
-                        <div className="w-10 h-1 bg-slate-200/70 rounded-full mx-auto mb-8 flex-shrink-0"></div>
-                        <h3 className="text-xl font-bold text-charcoal mb-6">{initialData ? '編輯預訂' : '新增預訂'}</h3>
-                        <div className="space-y-6">
-                            <div className="flex gap-4">
-                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">類型</label><select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none"><option value="flight">✈️ 航班</option><option value="hotel">🏨 住宿</option><option value="restaurant">🍽️ 餐廳</option><option value="ticket">🎫 票券</option></select></div>
-                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">狀態</label><select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none"><option value="booked">✅ 已預訂</option><option value="pending">⏳ 處理中</option><option value="to-book">⚠️ 待預訂</option></select></div>
-                            </div>
-                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">名稱</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="例如：Skyliner 車票" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
-                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">時間</label><input type="text" value={formData.dateTime} onChange={(e) => setFormData({...formData, dateTime: e.target.value})} placeholder="例如：1/28 14:00" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
-                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">編號</label><input type="text" value={formData.refNumber || ''} onChange={(e) => setFormData({...formData, refNumber: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base font-mono focus:border-matcha outline-none" /></div>
-                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">備註</label><textarea value={formData.notes || ''} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none" /></div>
-                        </div>
-                        <div className="mt-8 flex gap-4">{initialData && onDelete && <button onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle">刪除</button>}<button onClick={() => onSave(formData)} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl shadow-lg">儲存</button></div>
-                    </div>
-                </div>
-            );
-        };
-
         const MealModal = ({ isOpen, initialData, type, onClose, onSave, onDelete }) => {
             const [formData, setFormData] = useState({ name: '', dish: '', priceLevel: '', note: '', url: '', locationUrl: '' });
             useEffect(() => { if(isOpen) setFormData(initialData || { name: '', dish: '', priceLevel: '', note: '', url: '', locationUrl: '' }); }, [isOpen, initialData]);
@@ -821,6 +816,7 @@
             const [view, setView] = useState('itinerary');
             const [data, setData] = useState(DEFAULT_DATA);
             const [currentDayIdx, setCurrentDayIdx] = useState(0);
+            const [currency, setCurrency] = useState('JPY');
             const [liveWeather, setLiveWeather] = useState(null);
             
             const [detailEvent, setDetailEvent] = useState(null);
