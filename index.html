@@ -80,9 +80,9 @@
   "imports": {
     "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
     "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "sweetalert2": "https://aistudiocdn.com/sweetalert2@^11.26.3"
   }
 }
@@ -644,7 +644,7 @@
             );
         };
 
-        const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal, onMoveEvent, onEditDay }) => {
+        const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal, onMoveEvent, onEditDay, onMoveDay }) => {
             const isManualScroll = useRef(false);
             const [mapOpen, setMapOpen] = useState(false);
 
@@ -695,9 +695,32 @@
                             <div id={`day-${dIdx}`} key={dIdx} className="scroll-mt-40 transition-opacity duration-500">
                                 <div className="mb-6 px-1 relative group">
                                     <div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-400 tracking-widest uppercase">{day.date} · {day.weekday}</span><span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md"><i className="fa-solid fa-cloud-sun mr-1"></i>{day.weather}</span></div>
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <h2 className="text-2xl font-bold text-charcoal tracking-wide">{day.title}</h2>
-                                        <button onClick={() => onEditDay(dIdx)} className="text-slate-300 hover:text-matcha p-1"><i className="fa-solid fa-pen text-sm"></i></button>
+                                    <div className="flex items-center gap-3 mt-2">
+                                        <h2 className="text-2xl font-bold text-charcoal tracking-wide flex-1">{day.title}</h2>
+                                        <div className="flex items-center bg-white border border-subtle rounded-lg p-1 shadow-sm">
+                                             <button 
+                                                onClick={(e) => { e.stopPropagation(); onMoveDay(dIdx, -1); }} 
+                                                disabled={dIdx === 0}
+                                                className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${dIdx === 0 ? 'text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-matcha'}`}
+                                            >
+                                                <i className="fa-solid fa-chevron-left"></i>
+                                            </button>
+                                            <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); onEditDay(dIdx); }} 
+                                                className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-matcha transition-colors"
+                                            >
+                                                <i className="fa-solid fa-pen"></i>
+                                            </button>
+                                            <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                                             <button 
+                                                onClick={(e) => { e.stopPropagation(); onMoveDay(dIdx, 1); }} 
+                                                disabled={dIdx === days.length - 1}
+                                                className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${dIdx === days.length - 1 ? 'text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-matcha'}`}
+                                            >
+                                                <i className="fa-solid fa-chevron-right"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <MealOptions mealData={day.mealOptions} onAdd={(type) => onAddMeal(dIdx, type)} onEdit={(type, option) => onEditMeal(dIdx, type, option)} />
@@ -939,6 +962,31 @@
                 }
             };
 
+            const handleMoveDay = (idx, direction) => {
+                const targetIdx = idx + direction;
+                if (targetIdx < 0 || targetIdx >= data.days.length) return;
+
+                const newData = { ...data };
+                // 1. Swap the entire day objects (Content moves)
+                const tempDay = newData.days[idx];
+                newData.days[idx] = newData.days[targetIdx];
+                newData.days[targetIdx] = tempDay;
+
+                // 2. SWAP THE DATES BACK (So date order remains chronological)
+                // We want the plan to move, but the calendar dates to stay fixed
+                const tempDate = newData.days[idx].date;
+                const tempWeekday = newData.days[idx].weekday;
+
+                newData.days[idx].date = newData.days[targetIdx].date;
+                newData.days[idx].weekday = newData.days[targetIdx].weekday;
+
+                newData.days[targetIdx].date = tempDate;
+                newData.days[targetIdx].weekday = tempWeekday;
+
+                syncData(newData);
+                setCurrentDayIdx(targetIdx); // Follow the moved content
+            };
+
             const handleDeleteEvent = () => {
                  const newData = {...data};
                  newData.days[editingEvent.dayIdx].events = newData.days[editingEvent.dayIdx].events.filter(e => e.id !== editingEvent.eventId);
@@ -969,7 +1017,7 @@
                         </div>
                     </header>
                     <main className="pt-24 max-w-lg mx-auto">
-                        {view === 'itinerary' && <ItineraryView days={data.days} currentDayIdx={currentDayIdx} onDaySelect={setCurrentDayIdx} onEventClick={(d,e) => setDetailEvent({dayIdx:d, event:e})} onTransportClick={(d,id) => setEditingTransport({dayIdx:d, eventId:id})} onAddEvent={(d) => setEditingEvent({dayIdx:d})} onAddMeal={(d,t) => setEditingMeal({dayIdx:d, type:t})} onEditMeal={(d,t,o) => setEditingMeal({dayIdx:d, type:t, option:o})} onMoveEvent={handleMoveEvent} onEditDay={(d) => setEditingDay({idx: d, data: data.days[d]})} />}
+                        {view === 'itinerary' && <ItineraryView days={data.days} currentDayIdx={currentDayIdx} onDaySelect={setCurrentDayIdx} onEventClick={(d,e) => setDetailEvent({dayIdx:d, event:e})} onTransportClick={(d,id) => setEditingTransport({dayIdx:d, eventId:id})} onAddEvent={(d) => setEditingEvent({dayIdx:d})} onAddMeal={(d,t) => setEditingMeal({dayIdx:d, type:t})} onEditMeal={(d,t,o) => setEditingMeal({dayIdx:d, type:t, option:o})} onMoveEvent={handleMoveEvent} onEditDay={(d) => setEditingDay({idx: d, data: data.days[d]})} onMoveDay={handleMoveDay} />}
                         {view === 'info' && <InfoView reservations={data.reservations} onEdit={(r) => setEditingReservation({id:r.id, initial:r})} onAdd={() => setEditingReservation({})} />}
                         {view === 'money' && (<><MoneyView expenses={data.expenses} members={MEMBERS.map(m=>m.id)} currencyRate={data.currencyRate} currentCurrency="JPY" onDelete={(id) => syncData({...data, expenses: data.expenses.filter(e => e.id !== id)})} /><ExpenseModal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)} members={MEMBERS} onSave={handleSaveExpense} /></>)}
                         {view === 'packing' && <PackingListView items={data.packingList} onToggle={(id) => {const n={...data}; n.packingList.find(i=>i.id===id).checked = !n.packingList.find(i=>i.id===id).checked; syncData(n)}} onAdd={(t,c) => {const n={...data}; n.packingList.push({id:generateId(), text:t, category:c, checked:false}); syncData(n)}} onDelete={(id) => {const n={...data}; n.packingList = n.packingList.filter(i=>i.id!==id); syncData(n)}} />}
