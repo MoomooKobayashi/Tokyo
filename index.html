@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>東京七日行 2026</title>
+    <title>2026東京行</title>
     
     <!-- PWA / Home Screen Settings -->
     <meta name="theme-color" content="#fcfaf7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Tokyo Trip">
+    <meta name="apple-mobile-web-app-title" content="2026東京行">
     
-    <!-- Icon Settings (Updated to Klook Image) -->
+    <!-- Icon Settings (Klook Image) -->
     <link rel="apple-touch-icon" href="https://res.klook.com/image/upload/fl_lossy.progressive,q_60/Mobile/City/lgra7vcg7b2g3zcts3sl.jpg">
     <link rel="icon" type="image/jpeg" href="https://res.klook.com/image/upload/fl_lossy.progressive,q_60/Mobile/City/lgra7vcg7b2g3zcts3sl.jpg">
-    <link rel="manifest" href="manifest.json?v=4">
+    <link rel="manifest" href="manifest.json?v=5">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -80,9 +80,9 @@
   "imports": {
     "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
     "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "sweetalert2": "https://aistudiocdn.com/sweetalert2@^11.26.3"
   }
 }
@@ -96,7 +96,7 @@
         import { initializeApp } from "firebase/app";
         import { getDatabase, ref, onValue, set } from "firebase/database";
 
-        // --- FIREBASE CONFIG (您的設定) ---
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyCMuSoz3MhH4Pxtg9hcWV2aIoXk3Rw2Pbs",
             authDomain: "tokyotrip2026-d2ddc.firebaseapp.com",
@@ -110,7 +110,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Expose to window for React
         window.db = db;
         window.dbRef = ref;
         window.dbSet = set;
@@ -125,7 +124,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- CONSTANTS ---
-        const DATA_VERSION = 2; 
+        const DATA_VERSION = 3; 
 
         const MEMBERS = [
             { id: 'm1', name: '維尼', icon: '🐻' },
@@ -174,10 +173,10 @@
             expenses: [],
             packingList: INITIAL_PACKING_LIST,
             reservations: [
-                { id: generateId(), type: 'flight', name: '去程 BR198', status: 'booked', dateTime: '1/28 08:50', refNumber: '6F3X9A', notes: '桃園 T2 -> 成田 T1', url: '' },
-                { id: generateId(), type: 'flight', name: '回程 BR197', status: 'booked', dateTime: '2/3 13:00', refNumber: '6F3X9A', notes: '成田 T1 -> 桃園 T2', url: '' },
-                { id: generateId(), type: 'hotel', name: 'Dormy Inn Kawasaki', status: 'booked', dateTime: '1/28 - 1/30', notes: '神奈川県川崎市川崎区東田町9-3 (+81-44-230-5489)', url: 'https://www.google.com/maps/search/?api=1&query=Dormy+Inn+Kawasaki' },
-                { id: generateId(), type: 'hotel', name: '東橫INN 淺草藏前2號店', status: 'booked', dateTime: '1/30 - 2/3', notes: '東京都台東区蔵前3-15-5 (+81-3-5821-1045)', url: 'https://www.google.com/maps/search/?api=1&query=Toyoko+Inn+Asakusa+Kuramae' },
+                { id: generateId(), type: 'flight', name: '去程 BR198', status: 'booked', dateTime: '1/28 08:50', refNumber: '6F3X9A', notes: '桃園 T2 -> 成田 T1', url: '', locationUrl: '' },
+                { id: generateId(), type: 'flight', name: '回程 BR197', status: 'booked', dateTime: '2/3 13:00', refNumber: '6F3X9A', notes: '成田 T1 -> 桃園 T2', url: '', locationUrl: '' },
+                { id: generateId(), type: 'hotel', name: 'Dormy Inn Kawasaki', status: 'booked', dateTime: '1/28 - 1/30', notes: '神奈川県川崎市川崎区東田町9-3 (+81-44-230-5489)', url: '', locationUrl: 'https://www.google.com/maps/search/?api=1&query=Dormy+Inn+Kawasaki' },
+                { id: generateId(), type: 'hotel', name: '東橫INN 淺草藏前2號店', status: 'booked', dateTime: '1/30 - 2/3', notes: '東京都台東区蔵前3-15-5 (+81-3-5821-1045)', url: '', locationUrl: 'https://www.google.com/maps/search/?api=1&query=Toyoko+Inn+Asakusa+Kuramae' },
             ],
             days: [
                 {
@@ -334,7 +333,7 @@
             sight: 'text-matcha'
         };
 
-        const EventCard = ({ event, onClick }) => (
+        const EventCard = ({ event, onClick, onMove }) => (
             <div onClick={onClick} className="relative group cursor-pointer bg-white/50 rounded-2xl p-3 border border-transparent hover:border-matcha/30 hover:bg-white/80 transition-all duration-300">
                 <div className="absolute -left-[45px] top-6 w-5 h-5 rounded-full border-4 border-rice bg-slate-300 group-hover:bg-matcha transition-colors shadow-sm z-10"></div>
                 <div className="flex justify-between items-start gap-3">
@@ -357,6 +356,11 @@
                         )}
                     </div>
                     {event.image && <img src={event.image} className="w-20 h-20 rounded-xl object-cover shadow-sm opacity-90 group-hover:opacity-100 transition-opacity bg-slate-200 flex-shrink-0" loading="lazy" onError={(e) => e.target.style.display = 'none'} />}
+                </div>
+                {/* Reorder Buttons */}
+                <div className="absolute bottom-2 right-2 flex gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <button onClick={(e) => { e.stopPropagation(); onMove(-1); }} className="w-6 h-6 rounded-full bg-slate-100 hover:bg-matcha hover:text-white flex items-center justify-center text-[10px]"><i className="fa-solid fa-arrow-up"></i></button>
+                    <button onClick={(e) => { e.stopPropagation(); onMove(1); }} className="w-6 h-6 rounded-full bg-slate-100 hover:bg-matcha hover:text-white flex items-center justify-center text-[10px]"><i className="fa-solid fa-arrow-down"></i></button>
                 </div>
             </div>
         );
@@ -481,8 +485,8 @@
         };
 
         const ReservationModal = ({ isOpen, initialData, onClose, onSave, onDelete }) => {
-            const [formData, setFormData] = useState({ type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' });
-            useEffect(() => { if (isOpen) setFormData(initialData || { type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '' }); }, [isOpen, initialData]);
+            const [formData, setFormData] = useState({ type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '', locationUrl: '' });
+            useEffect(() => { if (isOpen) setFormData(initialData || { type: 'ticket', name: '', status: 'pending', dateTime: '', refNumber: '', notes: '', url: '', locationUrl: '' }); }, [isOpen, initialData]);
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 z-[70]">
@@ -498,6 +502,7 @@
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">名稱</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="例如：Skyliner 車票" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">時間</label><input type="text" value={formData.dateTime} onChange={(e) => setFormData({...formData, dateTime: e.target.value})} placeholder="例如：1/28 14:00" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">編號</label><input type="text" value={formData.refNumber || ''} onChange={(e) => setFormData({...formData, refNumber: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base font-mono focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">Google Maps 連結</label><input type="text" value={formData.locationUrl || ''} onChange={(e) => setFormData({...formData, locationUrl: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">備註</label><textarea value={formData.notes || ''} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none" /></div>
                         </div>
                         <div className="mt-8 flex gap-4">{initialData && onDelete && <button onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle">刪除</button>}<button onClick={() => onSave(formData)} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl shadow-lg">儲存</button></div>
@@ -639,7 +644,7 @@
             );
         };
 
-        const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal }) => {
+        const ItineraryView = ({ days, currentDayIdx, onDaySelect, onEventClick, onTransportClick, onAddEvent, onAddMeal, onEditMeal, onMoveEvent, onEditDay }) => {
             const isManualScroll = useRef(false);
             const [mapOpen, setMapOpen] = useState(false);
 
@@ -688,16 +693,19 @@
                     <div className="space-y-12">
                         {days && days.map((day, dIdx) => (
                             <div id={`day-${dIdx}`} key={dIdx} className="scroll-mt-40 transition-opacity duration-500">
-                                <div className="mb-6 px-1">
+                                <div className="mb-6 px-1 relative group">
                                     <div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-400 tracking-widest uppercase">{day.date} · {day.weekday}</span><span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md"><i className="fa-solid fa-cloud-sun mr-1"></i>{day.weather}</span></div>
-                                    <h2 className="text-2xl font-bold text-charcoal mt-2 tracking-wide">{day.title}</h2>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <h2 className="text-2xl font-bold text-charcoal tracking-wide">{day.title}</h2>
+                                        <button onClick={() => onEditDay(dIdx)} className="text-slate-300 hover:text-matcha p-1"><i className="fa-solid fa-pen text-sm"></i></button>
+                                    </div>
                                 </div>
                                 <MealOptions mealData={day.mealOptions} onAdd={(type) => onAddMeal(dIdx, type)} onEdit={(type, option) => onEditMeal(dIdx, type, option)} />
                                 <div className="relative ml-2.5 pl-8 space-y-0 pb-4">
                                     <div className="absolute left-[10px] top-4 bottom-4 w-0.5 bg-slate-100 -z-10"></div>
                                     {day.events && day.events.map((ev, eIdx) => (
                                         <div key={ev.id}>
-                                            <EventCard event={ev} onClick={() => onEventClick(dIdx, ev)} />
+                                            <EventCard event={ev} onClick={() => onEventClick(dIdx, ev)} onMove={(dir) => onMoveEvent(dIdx, eIdx, dir)} />
                                             {eIdx < day.events.length - 1 && <TransportConnector data={ev.transitToNext} onClick={() => onTransportClick(dIdx, ev.id)} />}
                                         </div>
                                     ))}
@@ -729,7 +737,18 @@
                             {event.tags && (<div className="flex flex-wrap gap-2">{event.tags.map(tag => (<span key={tag} className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold tracking-wider">#{tag}</span>))}</div>)}
                             <div className="text-charcoal leading-relaxed tracking-wide"><h4 className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-widest">關於</h4><p className="whitespace-pre-line">{event.desc || '暫無詳細描述。'}</p></div>
                             {event.note && (<div className="bg-[#f4f1e8] p-4 rounded-xl border-l-2 border-matcha"><p className="text-xs font-bold text-matcha uppercase mb-1 tracking-widest">TIPS</p><p className="text-sm text-charcoal/80">{event.note}</p></div>)}
-                            <div className="flex gap-4 pt-4"><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((event.loc || '') + ' ' + event.title)}`} target="_blank" className="flex-1 border border-subtle text-charcoal py-3.5 rounded-2xl font-bold text-center active:bg-slate-50 transition-colors text-sm tracking-wider">導航</a><a href={`https://www.google.com/search?q=${encodeURIComponent(event.title)}`} target="_blank" className="flex-1 bg-charcoal text-white py-3.5 rounded-2xl font-bold text-center active:bg-charcoal/90 transition-colors text-sm tracking-wider">搜尋</a></div>
+                            <div className="flex gap-4 pt-4">
+                                {event.locationUrl ? (
+                                    <a href={event.locationUrl} target="_blank" className="flex-1 border border-subtle text-charcoal py-3.5 rounded-2xl font-bold text-center active:bg-slate-50 transition-colors text-sm tracking-wider">導航</a>
+                                ) : (
+                                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((event.loc || '') + ' ' + event.title)}`} target="_blank" className="flex-1 border border-subtle text-charcoal py-3.5 rounded-2xl font-bold text-center active:bg-slate-50 transition-colors text-sm tracking-wider">導航</a>
+                                )}
+                                {event.url ? (
+                                    <a href={event.url} target="_blank" className="flex-1 bg-charcoal text-white py-3.5 rounded-2xl font-bold text-center active:bg-charcoal/90 transition-colors text-sm tracking-wider">連結</a>
+                                ) : (
+                                    <a href={`https://www.google.com/search?q=${encodeURIComponent(event.title)}`} target="_blank" className="flex-1 bg-charcoal text-white py-3.5 rounded-2xl font-bold text-center active:bg-charcoal/90 transition-colors text-sm tracking-wider">搜尋</a>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -737,9 +756,9 @@
         };
 
         const EventModal = ({ isOpen, initialData, onClose, onSave, onDelete }) => {
-            const [formData, setFormData] = useState({ time: '09:00', type: 'sight', title: '', loc: '', image: '', desc: '', subItems: [] });
+            const [formData, setFormData] = useState({ time: '09:00', type: 'sight', title: '', loc: '', image: '', desc: '', subItems: [], url: '', locationUrl: '' });
             const [newSub, setNewSub] = useState({ text: '', type: 'buy' });
-            useEffect(() => { if (isOpen) setFormData(initialData || { time: '09:00', type: 'sight', title: '', loc: '', image: '', desc: '', subItems: [] }); }, [isOpen, initialData]);
+            useEffect(() => { if (isOpen) setFormData(initialData || { time: '09:00', type: 'sight', title: '', loc: '', image: '', desc: '', subItems: [], url: '', locationUrl: '' }); }, [isOpen, initialData]);
             const handleImageUpload = (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -759,6 +778,10 @@
                             <div className="flex gap-4"><div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">時間</label><input type="time" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 font-mono text-lg focus:border-matcha outline-none transition-colors" /></div><div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">類型</label><select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-lg focus:border-matcha outline-none"><option value="sight">📷 景點</option><option value="food">🍜 美食</option><option value="transport">🚅 交通</option><option value="hotel">🏨 住宿</option></select></div></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">標題</label><input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="請輸入標題" className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">地點</label><input type="text" value={formData.loc} onChange={e => setFormData({...formData, loc: e.target.value})} placeholder="例如：淺草" className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div className="flex gap-4">
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">參考連結 (URL)</label><input type="text" value={formData.url || ''} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://..." className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">地圖連結</label><input type="text" value={formData.locationUrl || ''} onChange={e => setFormData({...formData, locationUrl: e.target.value})} placeholder="https://maps..." className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            </div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">圖片</label><div className="flex items-center gap-4">{formData.image && <img src={formData.image} className="w-16 h-16 rounded-lg object-cover bg-slate-100" />}<label className="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-slate-200 transition-colors"><i className="fa-solid fa-camera mr-2"></i>上傳照片<input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" /></label></div></div>
                             <div className="bg-white p-4 rounded-xl border border-subtle"><div className="flex gap-2 mb-2"><select value={newSub.type} onChange={e => setNewSub({...newSub, type: e.target.value})} className="bg-slate-100 rounded text-xs p-2"><option value="buy">🛍️</option><option value="eat">🍴</option><option value="do">✨</option></select><input type="text" value={newSub.text} onChange={e => setNewSub({...newSub, text: e.target.value})} placeholder="新增項目" className="flex-1 bg-slate-50 border-b border-subtle px-2 text-sm" /><button onClick={() => { if(newSub.text){ setFormData(p => ({...p, subItems: [...(p.subItems||[]), {id: generateId(), ...newSub, checked: false}]})); setNewSub(p => ({...p, text: ''})); }}} className="text-matcha font-bold">+</button></div>{formData.subItems?.map(i => <div key={i.id} className="flex justify-between text-sm bg-slate-50 p-2 rounded mb-1"><span>{i.type==='buy'?'🛍️':i.type==='eat'?'🍴':'✨'} {i.text}</span><button onClick={() => setFormData(p => ({...p, subItems: p.subItems.filter(x => x.id !== i.id)}))} className="text-red-400">x</button></div>)}</div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">描述</label><textarea value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} rows={3} placeholder="寫點什麼..." className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none" /></div>
@@ -803,10 +826,34 @@
                         <div className="space-y-6">
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">餐廳名稱</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
                             <div className="flex gap-4"><div className="flex-[2]"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">推薦餐點</label><input type="text" value={formData.dish} onChange={(e) => setFormData({...formData, dish: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div><div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">價位</label><input type="text" value={formData.priceLevel} onChange={(e) => setFormData({...formData, priceLevel: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base font-mono focus:border-matcha outline-none" /></div></div>
-                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">連結</label><input type="text" value={formData.url || ''} onChange={(e) => setFormData({...formData, url: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">連結 (參考)</label><input type="text" value={formData.url || ''} onChange={(e) => setFormData({...formData, url: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">地圖連結</label><input type="text" value={formData.locationUrl || ''} onChange={(e) => setFormData({...formData, locationUrl: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
                             <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">筆記</label><textarea value={formData.note || ''} onChange={(e) => setFormData({...formData, note: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base resize-none focus:border-matcha outline-none" /></div>
                         </div>
                         <div className="mt-8 flex gap-4">{initialData && onDelete && <button onClick={onDelete} className="flex-1 text-red-400 font-bold py-3.5 rounded-2xl border border-subtle">刪除</button>}<button onClick={() => onSave({id: initialData?.id || generateId(), ...formData})} className="flex-[2] bg-matcha text-white font-bold py-3.5 rounded-2xl shadow-lg">儲存</button></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const DayModal = ({ isOpen, initialData, onClose, onSave }) => {
+            const [formData, setFormData] = useState({ title: '', date: '', weekday: '', weather: '' });
+            useEffect(() => { if (isOpen) setFormData(initialData || { title: '', date: '', weekday: '', weather: '' }); }, [isOpen, initialData]);
+            if (!isOpen) return null;
+            return (
+                 <div className="fixed inset-0 z-[75]">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose}></div>
+                    <div className="fixed inset-x-0 bottom-0 z-10 bg-rice rounded-t-[24px] p-8 pb-safe shadow-2xl animate-slide-up">
+                        <h3 className="text-xl font-bold text-charcoal mb-6">編輯日期資訊</h3>
+                        <div className="space-y-6">
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">標題</label><input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-lg font-medium focus:border-matcha outline-none" /></div>
+                            <div className="flex gap-4">
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">日期 (ex: 1/28)</label><input type="text" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                                <div className="flex-1"><label className="text-xs uppercase font-bold text-slate-400 block mb-2">星期</label><input type="text" value={formData.weekday} onChange={e => setFormData({...formData, weekday: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                            </div>
+                            <div><label className="text-xs uppercase font-bold text-slate-400 block mb-2">天氣 (ex: 晴天 5-10°C)</label><input type="text" value={formData.weather} onChange={e => setFormData({...formData, weather: e.target.value})} className="w-full bg-transparent border-b border-subtle py-2 text-base focus:border-matcha outline-none" /></div>
+                        </div>
+                        <div className="mt-8 flex gap-4"><button onClick={() => onSave(formData)} className="w-full bg-matcha text-white font-bold py-3.5 rounded-2xl shadow-lg">儲存</button></div>
                     </div>
                 </div>
             );
@@ -824,6 +871,7 @@
             const [editingTransport, setEditingTransport] = useState(null);
             const [editingMeal, setEditingMeal] = useState(null);
             const [editingReservation, setEditingReservation] = useState(null);
+            const [editingDay, setEditingDay] = useState(null);
             const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
             useEffect(() => {
@@ -832,25 +880,20 @@
                     const dataRef = window.dbRef(window.db, 'tripData');
                     const unsubscribe = window.dbOnValue(dataRef, (snapshot) => {
                         const val = snapshot.val();
-                        if (val && val.days && val.days.length > 0 && val.version === DATA_VERSION) {
+                        if (val && val.days && val.days.length > 0 && val.version >= DATA_VERSION) {
                             const safeData = { ...DEFAULT_DATA, ...val };
                             if(safeData.days) {
                                 safeData.days.forEach(d => {
                                     if (!d.mealOptions) d.mealOptions = { breakfast: [], lunch: [], dinner: [] };
-                                    if (!d.mealOptions.breakfast) d.mealOptions.breakfast = [];
-                                    if (!d.mealOptions.lunch) d.mealOptions.lunch = [];
-                                    if (!d.mealOptions.dinner) d.mealOptions.dinner = [];
                                     if (!d.events) d.events = [];
                                     d.events.forEach(e => { if (!e.subItems) e.subItems = []; });
                                 });
                             }
-                            if(!safeData.expenses) safeData.expenses = [];
-                            if(!safeData.reservations) safeData.reservations = [];
-                            if(!safeData.packingList) safeData.packingList = [];
                             setData(safeData);
                         } else {
-                            window.dbSet(dataRef, DEFAULT_DATA);
-                            setData(DEFAULT_DATA);
+                            // First load or older version, just use default or migrate
+                             window.dbSet(dataRef, DEFAULT_DATA);
+                             setData(DEFAULT_DATA);
                         }
                     });
                     return unsubscribe;
@@ -877,10 +920,25 @@
                     if(idx >= 0) list[idx] = {...list[idx], ...eData};
                 } else {
                     newData.days[editingEvent.dayIdx].events.push({id: generateId(), ...eData});
-                    newData.days[editingEvent.dayIdx].events.sort((a,b)=>a.time.localeCompare(b.time));
                 }
+                // Basically sort by time, but stable sort to keep manual edits if possible
+                newData.days[editingEvent.dayIdx].events.sort((a,b)=>a.time.localeCompare(b.time));
                 syncData(newData); setEditingEvent(null);
             };
+
+            const handleMoveEvent = (dayIdx, eventIdx, direction) => {
+                const newData = {...data};
+                const events = newData.days[dayIdx].events;
+                const newIdx = eventIdx + direction;
+                if (newIdx >= 0 && newIdx < events.length) {
+                    const temp = events[eventIdx];
+                    events[eventIdx] = events[newIdx];
+                    events[newIdx] = temp;
+                    // Do NOT auto sort here to allow manual override
+                    syncData(newData);
+                }
+            };
+
             const handleDeleteEvent = () => {
                  const newData = {...data};
                  newData.days[editingEvent.dayIdx].events = newData.days[editingEvent.dayIdx].events.filter(e => e.id !== editingEvent.eventId);
@@ -906,12 +964,12 @@
                 <div className="min-h-screen bg-rice font-sans text-charcoal">
                     <header className="fixed top-0 w-full z-40 bg-rice/95 backdrop-blur-md transition-all duration-300 pt-safe border-b border-subtle">
                         <div className="flex justify-between items-end px-6 py-4 pb-3">
-                            <div><p className="text-xs text-slate-400 font-medium tracking-widest uppercase mb-1">Tokyo Trip</p><h1 className="text-2xl font-bold tracking-wide text-charcoal">東京七日</h1></div>
+                            <div><p className="text-xs text-slate-400 font-medium tracking-widest uppercase mb-1">Tokyo Trip</p><h1 className="text-2xl font-bold tracking-wide text-charcoal">2026東京行</h1></div>
                             <div className="flex items-center gap-3">{liveWeather ? (<div className="text-sm font-medium text-slate-500 flex items-center bg-slate-100 px-3 py-1 rounded-full"><i className={`fa-solid ${getWeatherIcon(liveWeather.code)} text-slate-400 mr-2`}></i><span>{data.days[currentDayIdx].locationKey === 'tokyo' ? '東京' : LOCATIONS[data.days[currentDayIdx].locationKey].name} {liveWeather.temp}°C</span></div>) : (<div className="text-sm font-medium text-slate-300"><i className="fa-solid fa-spinner fa-spin"></i></div>)}<button onClick={() => setCurrency(c => c === 'JPY' ? 'TWD' : 'JPY')} className="text-xs border border-subtle text-slate-500 px-3 py-1.5 rounded-full font-bold active:bg-slate-100 transition-colors tracking-wider">{currency}</button></div>
                         </div>
                     </header>
                     <main className="pt-24 max-w-lg mx-auto">
-                        {view === 'itinerary' && <ItineraryView days={data.days} currentDayIdx={currentDayIdx} onDaySelect={setCurrentDayIdx} onEventClick={(d,e) => setDetailEvent({dayIdx:d, event:e})} onTransportClick={(d,id) => setEditingTransport({dayIdx:d, eventId:id})} onAddEvent={(d) => setEditingEvent({dayIdx:d})} onAddMeal={(d,t) => setEditingMeal({dayIdx:d, type:t})} onEditMeal={(d,t,o) => setEditingMeal({dayIdx:d, type:t, option:o})} />}
+                        {view === 'itinerary' && <ItineraryView days={data.days} currentDayIdx={currentDayIdx} onDaySelect={setCurrentDayIdx} onEventClick={(d,e) => setDetailEvent({dayIdx:d, event:e})} onTransportClick={(d,id) => setEditingTransport({dayIdx:d, eventId:id})} onAddEvent={(d) => setEditingEvent({dayIdx:d})} onAddMeal={(d,t) => setEditingMeal({dayIdx:d, type:t})} onEditMeal={(d,t,o) => setEditingMeal({dayIdx:d, type:t, option:o})} onMoveEvent={handleMoveEvent} onEditDay={(d) => setEditingDay({idx: d, data: data.days[d]})} />}
                         {view === 'info' && <InfoView reservations={data.reservations} onEdit={(r) => setEditingReservation({id:r.id, initial:r})} onAdd={() => setEditingReservation({})} />}
                         {view === 'money' && (<><MoneyView expenses={data.expenses} members={MEMBERS.map(m=>m.id)} currencyRate={data.currencyRate} currentCurrency="JPY" onDelete={(id) => syncData({...data, expenses: data.expenses.filter(e => e.id !== id)})} /><ExpenseModal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)} members={MEMBERS} onSave={handleSaveExpense} /></>)}
                         {view === 'packing' && <PackingListView items={data.packingList} onToggle={(id) => {const n={...data}; n.packingList.find(i=>i.id===id).checked = !n.packingList.find(i=>i.id===id).checked; syncData(n)}} onAdd={(t,c) => {const n={...data}; n.packingList.push({id:generateId(), text:t, category:c, checked:false}); syncData(n)}} onDelete={(id) => {const n={...data}; n.packingList = n.packingList.filter(i=>i.id!==id); syncData(n)}} />}
@@ -932,6 +990,7 @@
                     <TransportModal isOpen={!!editingTransport} initialData={editingTransport ? data.days[editingTransport.dayIdx].events.find(e => e.id === editingTransport.eventId)?.transitToNext : undefined} onClose={() => setEditingTransport(null)} onSave={(td) => { const n={...data}; n.days[editingTransport.dayIdx].events.find(e => e.id === editingTransport.eventId).transitToNext = td; syncData(n); setEditingTransport(null); }} />
                     <MealModal isOpen={!!editingMeal} type={editingMeal?.type} initialData={editingMeal?.option} onClose={() => setEditingMeal(null)} onSave={(o) => { const n={...data}; const list = n.days[editingMeal.dayIdx].mealOptions[editingMeal.type]; if(editingMeal.option) { list[list.findIndex(x=>x.id===o.id)] = o; } else { list.push(o); } syncData(n); setEditingMeal(null); }} onDelete={() => { const n={...data}; n.days[editingMeal.dayIdx].mealOptions[editingMeal.type] = n.days[editingMeal.dayIdx].mealOptions[editingMeal.type].filter(x=>x.id!==editingMeal.option.id); syncData(n); setEditingMeal(null); }} />
                     <ReservationModal isOpen={!!editingReservation} initialData={editingReservation?.initial} onClose={() => setEditingReservation(null)} onSave={(r) => { const n={...data}; if(editingReservation.id) { const idx = n.reservations.findIndex(x=>x.id===editingReservation.id); n.reservations[idx] = {...n.reservations[idx], ...r}; } else { n.reservations.push({id: generateId(), ...r}); } syncData(n); setEditingReservation(null); }} onDelete={() => { const n={...data}; n.reservations = n.reservations.filter(x=>x.id!==editingReservation.id); syncData(n); setEditingReservation(null); }} />
+                    <DayModal isOpen={!!editingDay} initialData={editingDay?.data} onClose={() => setEditingDay(null)} onSave={(d) => { const n={...data}; n.days[editingDay.idx] = {...n.days[editingDay.idx], ...d}; syncData(n); setEditingDay(null); }} />
                 </div>
             );
         };
